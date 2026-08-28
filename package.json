@@ -1,0 +1,11 @@
+{
+  "name": "kain",
+  "version": "1.0.0",
+  "description": "Price-optimized nutrition engine for Filipino families. Enactus Philippines 2026.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "serve": "python -m http.server 8000"
+  }
+}

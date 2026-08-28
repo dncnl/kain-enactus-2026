@@ -1,0 +1,21 @@
+{
+  "name": "Kain — Budget to Meal Plan",
+  "short_name": "Kain",
+  "description": "Turn a fixed food budget into the most nutritious meal plan your family can afford. Works offline.",
+  "lang": "en-PH",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF9F6",
+  "theme_color": "#FFCC40",
+  "categories": ["food", "health", "utilities"],
+  "icons": [
+    {
+      "src": "assets/kain-logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

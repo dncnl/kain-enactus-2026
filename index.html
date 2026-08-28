@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Kain — Budget to Meal Plan</title>
+<meta name="description" content="Turn a fixed food budget into the most nutritious meal plan your family can afford. Works offline." />
+<meta name="theme-color" content="#FFCC40" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="assets/kain-logo.png" />
+<link rel="apple-touch-icon" href="assets/kain-logo.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          kain: { yellow: '#FFCC40', green: '#4A7856', cream: '#FAF9F6', ink: '#000000' }
+        },
+        fontFamily: {
+          head: ['Montserrat', 'system-ui', 'sans-serif'],
+          body: ['Poppins', 'system-ui', 'sans-serif']
+        },
+        boxShadow: {
+          pop: '4px 4px 0 #000',
+          'pop-lg': '6px 6px 0 #000',
+          'pop-sm': '3px 3px 0 #000'
+        }
+      }
+    }
+  };
+</script>
+<style>
+  /* The bubble-outline signature: thick black stroke, hard offset shadow.
+     Applied with restraint — primary surfaces and actions only. */
+  .bubble { border: 3px solid #000; border-radius: 1.5rem; }
+  .press { transition: transform .12s ease, box-shadow .12s ease; }
+  .press:active { transform: translate(4px, 4px); box-shadow: 0 0 0 #000 !important; }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+  @keyframes simmer { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-10px) scale(1.06); } }
+  .simmer { animation: simmer 1.1s ease-in-out infinite; }
+  /* Hide native number spinners — the +/− steppers are the intended control. */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+</style>
+</head>
+
+<body class="bg-kain-cream font-body text-black antialiased min-h-screen flex flex-col">
+
+  <!-- Persistent brand anchor. Fixed height on every screen so it never shifts
+       as the user moves input -> calculating -> results. -->
+  <header class="shrink-0 bg-kain-yellow border-b-[3px] border-black">
+    <div class="mx-auto w-full max-w-lg h-20 px-5 flex items-center justify-between">
+      <img src="assets/kain-logo.png" alt="Kain" class="h-12 w-auto" />
+      <p class="font-head font-bold text-[11px] leading-tight text-right uppercase tracking-wide opacity-80">
+        Budget<br />to Meal Plan
+      </p>
+    </div>
+  </header>
+
+  <main class="flex-1 w-full max-w-lg mx-auto px-5 py-7" aria-live="polite">
+
+    <!-- ============ SCREEN 1: INPUT ============ -->
+    <section data-screen="input">
+      <h1 class="font-head font-extrabold text-3xl leading-tight mb-2">Magkano ang budget?</h1>
+      <p class="text-sm opacity-70 mb-7">Enter what you can spend today. Kain finds the most nutritious plan that fits.</p>
+
+      <form id="plan-form" novalidate class="space-y-6">
+        <div>
+          <label for="budget" class="block font-head font-bold text-sm mb-2">Food budget</label>
+          <div class="bubble bg-white shadow-pop flex items-center overflow-hidden focus-within:shadow-pop-lg transition-shadow">
+            <span class="pl-5 pr-1 text-2xl font-head font-extrabold text-kain-green" aria-hidden="true">₱</span>
+            <input id="budget" name="budget" type="number" inputmode="numeric" min="1" step="1"
+                   placeholder="300" autocomplete="off"
+                   class="w-full bg-transparent py-4 pr-5 text-2xl font-head font-extrabold outline-none placeholder:opacity-30" />
+          </div>
+        </div>
+
+        <div>
+          <label for="familySize" class="block font-head font-bold text-sm mb-2">How many people?</label>
+          <div class="bubble bg-white shadow-pop flex items-center justify-between p-2">
+            <button type="button" data-step="-1" aria-label="Fewer people"
+                    class="press h-12 w-12 shrink-0 rounded-full border-[3px] border-black bg-kain-cream font-head text-2xl font-extrabold leading-none">−</button>
+            <input id="familySize" name="familySize" type="number" inputmode="numeric" min="1" step="1" value="4"
+                   class="w-full bg-transparent text-center text-2xl font-head font-extrabold outline-none" />
+            <button type="button" data-step="1" aria-label="More people"
+                    class="press h-12 w-12 shrink-0 rounded-full border-[3px] border-black bg-kain-cream font-head text-2xl font-extrabold leading-none">+</button>
+          </div>
+        </div>
+
+        <p id="form-error" role="alert" hidden
+           class="bubble bg-red-100 px-4 py-3 text-sm font-medium"></p>
+
+        <button type="submit"
+                class="press w-full rounded-full border-[3px] border-black bg-kain-yellow py-4 font-head text-lg font-extrabold shadow-pop-lg">
+          Gawin ang plano
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-xs opacity-50">Works offline · No account needed · Free</p>
+    </section>
+
+    <!-- ============ SCREEN 2: CALCULATING ============ -->
+    <section data-screen="calculating" hidden class="py-16 text-center">
+      <div class="simmer mx-auto mb-8 h-24 w-24 rounded-full border-[3px] border-black bg-kain-yellow shadow-pop-lg"></div>
+      <h2 class="font-head text-2xl font-extrabold">Naghahanap ng pinakamainam…</h2>
+      <p class="mt-2 text-sm opacity-70">Checking every combination that fits your budget.</p>
+    </section>
+
+    <!-- ============ SCREEN 3: RESULTS ============ -->
+    <section data-screen="results" hidden class="space-y-7">
+      <div class="bubble bg-kain-green text-white shadow-pop-lg p-5">
+        <p class="font-head text-xs font-bold uppercase tracking-wider opacity-80">Your plan</p>
+        <p class="font-head text-4xl font-extrabold mt-1" data-bind="totalCost">₱0</p>
+        <p class="text-sm opacity-90 mt-1">
+          of <span data-bind="budget">₱0</span> budget · feeds <span data-bind="familySize">0</span>
+          · <span data-bind="leftover">₱0</span> left
+        </p>
+      </div>
+
+      <section>
+        <h2 class="font-head text-xl font-extrabold mb-3">Mga putahe</h2>
+        <ul data-bind="meals" class="space-y-3"></ul>
+      </section>
+
+      <section>
+        <h2 class="font-head text-xl font-extrabold mb-1">Nutrisyon na natugunan</h2>
+        <p class="text-xs opacity-60 mb-3">Share of the daily need this plan delivers for the whole family.</p>
+        <div class="bubble bg-white shadow-pop p-4">
+          <canvas id="coverage-chart" height="200" aria-label="Nutrition coverage chart"></canvas>
+          <ul data-bind="coverage" class="mt-4 space-y-1 text-xs"></ul>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-head text-xl font-extrabold mb-1">Listahan sa palengke</h2>
+        <p class="text-xs opacity-60 mb-3">Exact quantities — nothing extra to spoil at home.</p>
+        <div class="bubble bg-white shadow-pop overflow-hidden">
+          <ul data-bind="shopping" class="divide-y-2 divide-black/10"></ul>
+          <div class="flex items-center justify-between bg-kain-yellow border-t-[3px] border-black px-4 py-3">
+            <span class="font-head font-extrabold">Kabuuan</span>
+            <span class="font-head font-extrabold text-lg" data-bind="listTotal">₱0</span>
+          </div>
+        </div>
+      </section>
+
+      <button type="button" data-action="reset"
+              class="press w-full rounded-full border-[3px] border-black bg-white py-4 font-head text-lg font-extrabold shadow-pop">
+        Bagong budget
+      </button>
+    </section>
+
+    <!-- ============ SCREEN 4: EMPTY / NOTHING FITS ============ -->
+    <section data-screen="empty" hidden class="py-10 text-center">
+      <div class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full border-[3px] border-black bg-white shadow-pop-lg text-4xl">🍚</div>
+      <h2 class="font-head text-2xl font-extrabold">Kulang pa ang budget</h2>
+      <p class="mx-auto mt-3 max-w-xs text-sm opacity-75">
+        No complete meal for <span data-bind="emptyFamily">0</span> fits
+        <span data-bind="emptyBudget">₱0</span> yet.
+      </p>
+      <div class="bubble bg-kain-yellow shadow-pop mx-auto mt-6 max-w-xs p-4">
+        <p class="text-xs font-bold uppercase tracking-wide opacity-70">Try at least</p>
+        <p class="font-head text-3xl font-extrabold" data-bind="minimumBudget">₱0</p>
+      </div>
+      <button type="button" data-action="reset"
+              class="press mt-7 w-full rounded-full border-[3px] border-black bg-white py-4 font-head text-lg font-extrabold shadow-pop">
+        Baguhin ang budget
+      </button>
+    </section>
+  </main>
+
+  <footer class="shrink-0 py-5 text-center text-[11px] opacity-40">
+    Kain · Angeles University Foundation · Enactus Philippines 2026
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
