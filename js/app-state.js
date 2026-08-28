@@ -9,6 +9,20 @@ import { solve } from './solver.js';
 import { buildShoppingList } from './shopping-list.js';
 import { calculateCoverage } from './nutrition.js';
 
+/**
+ * Highest budget we will solve for, in pesos.
+ *
+ * This is a memory ceiling, not a product opinion. solve() allocates one
+ * Uint8Array(budget + 1) per DP item, which is ~36 bytes per peso against the
+ * 18-recipe dataset: ₱100k costs 3.4MB and solves in ~19ms, while ₱1B would ask
+ * the browser for 33.5GB and kill the tab. The cap lives here rather than in
+ * solver.js because the solver's logic is fixed; this is input validation.
+ *
+ * If the recipe set grows a lot, re-measure — the per-peso cost scales with the
+ * number of binary-split items, not with the recipe count directly.
+ */
+export const MAX_BUDGET = 100000;
+
 /** Cheapest single meal that feeds the whole family, in pesos. */
 function minimumViableBudget(recipes, familySize) {
   const costs = recipes
@@ -39,6 +53,11 @@ export function createAppState() {
     submit({ budget, familySize }) {
       if (!Number.isFinite(budget) || budget <= 0) {
         state.error = 'Please enter a budget greater than zero.';
+        state.screen = 'input';
+        return notify();
+      }
+      if (budget > MAX_BUDGET) {
+        state.error = `That budget is larger than Kain handles. Please enter ₱${MAX_BUDGET.toLocaleString('en-PH')} or less.`;
         state.screen = 'input';
         return notify();
       }

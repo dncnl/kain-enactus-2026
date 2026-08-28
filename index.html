@@ -78,7 +78,7 @@
           <label for="budget" class="block font-head font-bold text-sm mb-2">Food budget</label>
           <div class="bubble bg-white shadow-pop flex items-center overflow-hidden focus-within:shadow-pop-lg transition-shadow">
             <span class="pl-5 pr-1 text-2xl font-head font-extrabold text-kain-green" aria-hidden="true">₱</span>
-            <input id="budget" name="budget" type="number" inputmode="numeric" min="1" step="1"
+            <input id="budget" name="budget" type="number" inputmode="numeric" min="1" max="100000" step="1"
                    placeholder="300" autocomplete="off"
                    class="w-full bg-transparent py-4 pr-5 text-2xl font-head font-extrabold outline-none placeholder:opacity-30" />
           </div>
@@ -96,11 +96,20 @@
           </div>
         </div>
 
+        <!-- Validation messages. Owned by render(), rewritten on every state
+             change — never write app-level failures here, they get clobbered. -->
         <p id="form-error" role="alert" hidden
            class="bubble bg-red-100 px-4 py-3 text-sm font-medium"></p>
 
-        <button type="submit"
-                class="press w-full rounded-full border-[3px] border-black bg-kain-yellow py-4 font-head text-lg font-extrabold shadow-pop-lg">
+        <!-- App-level failures (e.g. recipe data unavailable). Owned by
+             showFatal(); the state machine never touches it, so it persists. -->
+        <p id="app-error" role="alert" hidden
+           class="bubble bg-red-100 px-4 py-3 text-sm font-medium"></p>
+
+        <!-- Ships disabled: solving against an unloaded recipe list produces a
+             bogus "nothing fits your budget" screen. app.js enables it. -->
+        <button type="submit" disabled data-bind="submit"
+                class="press w-full rounded-full border-[3px] border-black bg-kain-yellow py-4 font-head text-lg font-extrabold shadow-pop-lg disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed">
           Gawin ang plano
         </button>
       </form>
@@ -135,7 +144,14 @@
         <h2 class="font-head text-xl font-extrabold mb-1">Nutrisyon na natugunan</h2>
         <p class="text-xs opacity-60 mb-3">Share of the daily need this plan delivers for the whole family.</p>
         <div class="bubble bg-white shadow-pop p-4">
-          <canvas id="coverage-chart" height="200" aria-label="Nutrition coverage chart"></canvas>
+          <!-- Chart.js runs with maintainAspectRatio:false, which sizes the
+               canvas to its parent. That parent MUST have a determinate height
+               or the canvas and the container grow off each other forever.
+               Do not replace this wrapper with an auto-height element. -->
+          <div data-bind="chartBox" class="relative h-56">
+            <canvas id="coverage-chart" aria-hidden="true"></canvas>
+          </div>
+          <!-- The accessible representation of the chart: same numbers as text. -->
           <ul data-bind="coverage" class="mt-4 space-y-1 text-xs"></ul>
         </div>
       </section>

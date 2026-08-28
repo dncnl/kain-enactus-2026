@@ -33,8 +33,11 @@ async function loadRecipes() {
     const response = await fetch('data/recipes.json');
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     recipes = await response.json();
+    if (!Array.isArray(recipes) || recipes.length === 0) throw new Error('empty recipe list');
+    // Only now is a plan solvable — see the disabled attribute in index.html.
+    bind('submit').disabled = false;
   } catch (error) {
-    showFatal('Hindi ma-load ang recipe data. Refresh the page while online once.');
+    showFatal('Hindi ma-load ang recipe data. Buksan muli ang app habang may internet.');
     console.error('[kain] recipe load failed', error);
   }
 }
@@ -44,6 +47,8 @@ async function loadRecipes() {
 function render(state) {
   for (const [name, el] of screens) el.hidden = name !== state.screen;
 
+  // Owns #form-error only. #app-error belongs to showFatal() and is left alone,
+  // otherwise a fatal message is wiped by the next state change.
   const error = document.getElementById('form-error');
   error.hidden = !state.error;
   error.textContent = state.error ?? '';
@@ -120,7 +125,16 @@ function renderEmpty(state) {
 /** Bars are clamped to the track; the list underneath carries the true figure. */
 function drawChart(coverage) {
   const canvas = document.getElementById('coverage-chart');
-  if (!canvas || typeof Chart === 'undefined') return; // offline-safe: list still renders
+  const box = bind('chartBox');
+
+  // Offline before the Chart.js CDN was ever cached. Collapse the fixed-height
+  // container rather than leaving a blank panel — the coverage list below still
+  // carries every number, so the screen stays fully useful without the chart.
+  if (!canvas || typeof Chart === 'undefined') {
+    if (box) box.hidden = true;
+    return;
+  }
+  box.hidden = false;
 
   const entries = NUTRIENTS.map(({ key }) => coverage[key]);
   chart?.destroy();
@@ -168,6 +182,13 @@ const familyInput = document.getElementById('familySize');
 
 document.getElementById('plan-form').addEventListener('submit', (event) => {
   event.preventDefault();
+  // Belt and braces alongside the disabled attribute: solving against an empty
+  // recipe list yields an empty plan, which the UI would report as "nothing
+  // fits your budget" — a wrong answer rather than a visible failure.
+  if (recipes.length === 0) {
+    showFatal('Hindi pa handa ang recipe data. Buksan muli ang app habang may internet.');
+    return;
+  }
   app.submit({
     budget: Number.parseFloat(budgetInput.value),
     familySize: Number.parseInt(familyInput.value, 10)
@@ -190,8 +211,9 @@ for (const button of document.querySelectorAll('[data-action="reset"]')) {
   });
 }
 
+/** App-level failure. Sticky by design: its own element, never touched by render(). */
 function showFatal(message) {
-  const error = document.getElementById('form-error');
+  const error = document.getElementById('app-error');
   error.hidden = false;
   error.textContent = message;
 }

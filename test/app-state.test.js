@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createAppState } from '../js/app-state.js';
+import { createAppState, MAX_BUDGET } from '../js/app-state.js';
 import { THREE_RECIPES } from './fixtures.js';
 
 test('starts on the input screen', () => {
@@ -42,6 +42,23 @@ test('rejects a non-positive budget without leaving the input screen', () => {
   state.submit({ budget: 0, familySize: 4 });
   assert.equal(state.screen, 'input');
   assert.match(state.error, /budget/i);
+});
+
+test('rejects a budget above the supported maximum', () => {
+  // solver.js allocates one Uint8Array(budget+1) per DP item -- roughly 36
+  // bytes per peso for the 18-recipe dataset. Without a ceiling, a 9-digit
+  // entry asks the browser for tens of gigabytes and kills the tab.
+  const state = createAppState();
+  state.submit({ budget: MAX_BUDGET + 1, familySize: 4 });
+  assert.equal(state.screen, 'input');
+  assert.match(state.error, /budget/i);
+});
+
+test('accepts a budget exactly at the maximum', () => {
+  const state = createAppState();
+  state.submit({ budget: MAX_BUDGET, familySize: 4 });
+  assert.equal(state.screen, 'calculating');
+  assert.equal(state.error, null);
 });
 
 test('rejects a family size below one', () => {
