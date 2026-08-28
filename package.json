@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "test": "node --test test/*.test.js",
-    "serve": "python -m http.server 8000"
+    "serve": "python -m http.server 8000",
+    "build:data": "node scripts/build-data.mjs"
   }
 }

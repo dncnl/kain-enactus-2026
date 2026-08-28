@@ -3,6 +3,46 @@
 // so shopping-list totals can be asserted against plan cost.
 // Garlic appears in both lugaw and monggo, to exercise ingredient merging.
 
+/**
+ * Deliberately awkward decimal costs, mirroring what the price pipeline
+ * generates (costPerServing is derived from unit prices, so it is rarely a
+ * whole peso). Exists to catch rounding disagreement between the plan total and
+ * the shopping-list total — THREE_RECIPES uses whole pesos and cannot surface it.
+ *
+ * INVARIANT (same as THREE_RECIPES): ingredient costs sum to
+ * costPerServing * servings.
+ */
+export const DECIMAL_RECIPES = [
+  {
+    id: 'munggo-decimal',
+    name: 'Munggo (decimal)',
+    servings: 3,
+    costPerServing: 21.69, // batch = 65.07
+    maxPortions: 3,
+    nutritionPerServing: { calories: 300, protein: 18, iron: 3, vitaminA: 40 },
+    ingredients: [
+      { name: 'Monggo', quantity: 250, unit: 'g', cost: 35.02 },
+      { name: 'Malunggay', quantity: 100, unit: 'g', cost: 12.35 },
+      { name: 'Garlic', quantity: 15, unit: 'g', cost: 5.25 },
+      { name: 'Cooking oil', quantity: 30, unit: 'ml', cost: 12.45 }
+    ]
+  },
+  {
+    id: 'lugaw-decimal',
+    name: 'Lugaw (decimal)',
+    servings: 3,
+    costPerServing: 15.33, // batch = 45.99
+    maxPortions: 3,
+    nutritionPerServing: { calories: 200, protein: 5, iron: 1, vitaminA: 10 },
+    ingredients: [
+      { name: 'Rice', quantity: 300, unit: 'g', cost: 30.33 },
+      { name: 'Ginger', quantity: 20, unit: 'g', cost: 5.41 },
+      { name: 'Garlic', quantity: 20, unit: 'g', cost: 7.0 },
+      { name: 'Onion', quantity: 22, unit: 'g', cost: 3.25 }
+    ]
+  }
+];
+
 export const THREE_RECIPES = [
   {
     id: 'lugaw',

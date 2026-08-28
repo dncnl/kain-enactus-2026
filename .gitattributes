@@ -1,0 +1,16 @@
+# Normalize line endings so a checkout on Windows and one on macOS/Linux
+# produce identical diffs. Without this, the first commit from a different OS
+# rewrites every line of every file and the review is unreadable.
+* text=auto eol=lf
+
+# Never touch binaries.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+
+# Generated — see scripts/build-data.mjs. Collapsed in diffs by default because
+# it is an artifact; review data/prices.json and data/recipes.source.json instead.
+data/recipes.json linguist-generated=true

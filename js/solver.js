@@ -9,16 +9,12 @@
  */
 
 /**
- * Placeholder daily nutritional needs, per person per day.
- * MOCK VALUES — backend dev replaces with real FNRI RENI figures,
- * ideally age/sex-disaggregated. Same key shape expected.
+ * Daily targets live in their own data-only module so the backend developer can
+ * edit them without touching solver logic. Re-exported here because existing
+ * callers import it from this module.
  */
-export const DAILY_TARGETS_PER_PERSON = {
-  calories: 2000,  // kcal
-  protein: 57,     // g
-  iron: 12,        // mg
-  vitaminA: 500    // mcg RE
-};
+export { DAILY_TARGETS_PER_PERSON } from './nutrition-targets.js';
+import { DAILY_TARGETS_PER_PERSON } from './nutrition-targets.js';
 
 /**
  * Relative importance when maximizing nutrition. Protein and iron are weighted

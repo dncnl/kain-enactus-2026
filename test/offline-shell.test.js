@@ -24,6 +24,15 @@ function precachedPaths() {
   return [...match[1].matchAll(/['"]([^'"]+)['"]/g)].map((m) => m[1]);
 }
 
+/**
+ * Source with comments removed. The I/O scan below looks for calls, and a
+ * comment that merely *discusses* fetch is not a network call — without this
+ * the guard fails on its own documentation.
+ */
+function stripComments(source) {
+  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+}
+
 /** Local (non-CDN) URLs an HTML file pulls in via src= or href=. */
 function localRefs(html) {
   return [...html.matchAll(/(?:src|href)="([^"]+)"/g)]
@@ -92,7 +101,11 @@ test('the solver keeps its zero-network guarantee', () => {
   // The non-negotiable architectural claim: nothing in the solver's dependency
   // graph may perform I/O. Guarded here so it cannot regress unnoticed.
   for (const mod of moduleGraph('js/solver.js')) {
-    assert.doesNotMatch(read(mod), /\bfetch\s*\(|XMLHttpRequest|navigator\.onLine/, `${mod} performs I/O`);
+    assert.doesNotMatch(
+      stripComments(read(mod)),
+      /\bfetch\s*\(|XMLHttpRequest|navigator\.onLine/,
+      `${mod} performs I/O`
+    );
   }
 });
 

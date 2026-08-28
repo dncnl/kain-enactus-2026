@@ -1,0 +1,29 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # No dependencies by design, so there is nothing to install.
+      - name: Run tests
+        run: npm test
+
+      # Catches a hand-edited data/recipes.json that no longer matches
+      # data/prices.json. test/data-build.test.js asserts the same thing, but
+      # failing here names the fix directly.
+      - name: Check generated data is in sync
+        run: |
+          npm run build:data
+          git diff --exit-code data/recipes.json \
+            || (echo "::error::data/recipes.json is stale — run 'npm run build:data' and commit the result" && exit 1)

@@ -1,0 +1,370 @@
+[
+  {
+    "name": "Ampalaya",
+    "unit": "g",
+    "pricePerUnit": 0.12,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Bagoong",
+    "unit": "g",
+    "pricePerUnit": 0.45,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Baguio beans",
+    "unit": "g",
+    "pricePerUnit": 0.16,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Bangus",
+    "unit": "g",
+    "pricePerUnit": 0.22,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Bay leaf",
+    "unit": "g",
+    "pricePerUnit": 2.5,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Carrot",
+    "unit": "g",
+    "pricePerUnit": 0.15,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Cauliflower",
+    "unit": "g",
+    "pricePerUnit": 0.1833,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Chicken",
+    "unit": "g",
+    "pricePerUnit": 0.2143,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Chicken liver",
+    "unit": "g",
+    "pricePerUnit": 0.2,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Chili",
+    "unit": "g",
+    "pricePerUnit": 0.5,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Coconut milk",
+    "unit": "ml",
+    "pricePerUnit": 0.15,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Cooking oil",
+    "unit": "ml",
+    "pricePerUnit": 0.48,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Cornstarch",
+    "unit": "g",
+    "pricePerUnit": 0.3333,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Dried fish",
+    "unit": "g",
+    "pricePerUnit": 0.175,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Eggs",
+    "unit": "pc",
+    "pricePerUnit": 10,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Fish sauce",
+    "unit": "ml",
+    "pricePerUnit": 0.3333,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Galunggong",
+    "unit": "g",
+    "pricePerUnit": 0.2,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Garlic",
+    "unit": "g",
+    "pricePerUnit": 0.4,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Ginger",
+    "unit": "g",
+    "pricePerUnit": 0.2667,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Ground pork",
+    "unit": "g",
+    "pricePerUnit": 0.1667,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Kalabasa",
+    "unit": "g",
+    "pricePerUnit": 0.08,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Kangkong",
+    "unit": "g",
+    "pricePerUnit": 0.08,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Labanos",
+    "unit": "g",
+    "pricePerUnit": 0.0833,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Malunggay",
+    "unit": "g",
+    "pricePerUnit": 0.125,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Monggo",
+    "unit": "g",
+    "pricePerUnit": 0.14,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Okra",
+    "unit": "g",
+    "pricePerUnit": 0.12,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Onion",
+    "unit": "g",
+    "pricePerUnit": 0.16,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Peppercorn",
+    "unit": "g",
+    "pricePerUnit": 1.6,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Pork",
+    "unit": "g",
+    "pricePerUnit": 0.3,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Potato",
+    "unit": "g",
+    "pricePerUnit": 0.09,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Repolyo",
+    "unit": "g",
+    "pricePerUnit": 0.07,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Rice",
+    "unit": "g",
+    "pricePerUnit": 0.1,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Saging saba",
+    "unit": "pc",
+    "pricePerUnit": 5,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Salt",
+    "unit": "g",
+    "pricePerUnit": 0.4,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Sardines",
+    "unit": "can",
+    "pricePerUnit": 22,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Sayote",
+    "unit": "g",
+    "pricePerUnit": 0.08,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Shrimp paste",
+    "unit": "g",
+    "pricePerUnit": 0.4667,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Sinigang mix",
+    "unit": "g",
+    "pricePerUnit": 0.3,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Sitaw",
+    "unit": "g",
+    "pricePerUnit": 0.12,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Sitsaro",
+    "unit": "g",
+    "pricePerUnit": 0.2,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Soy sauce",
+    "unit": "ml",
+    "pricePerUnit": 0.25,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Talong",
+    "unit": "g",
+    "pricePerUnit": 0.1,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Togue",
+    "unit": "g",
+    "pricePerUnit": 0.0667,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Tokwa",
+    "unit": "g",
+    "pricePerUnit": 0.14,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Tomato",
+    "unit": "g",
+    "pricePerUnit": 0.15,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  },
+  {
+    "name": "Vinegar",
+    "unit": "ml",
+    "pricePerUnit": 0.2,
+    "source": "mock (median of prior hand-entered values)",
+    "market": null,
+    "pricedOn": null
+  }
+]

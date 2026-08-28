@@ -1,0 +1,20 @@
+node_modules/
+
+# Deploy tooling
+.vercel/
+.netlify/
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.idea/
+*.swp
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+*.log
+npm-debug.log*

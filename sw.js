@@ -13,7 +13,7 @@
  *
  * Bump CACHE_NAME on every deploy — that is what evicts stale files.
  */
-const CACHE_NAME = 'kain-v1';
+const CACHE_NAME = 'kain-v2';
 
 /** Local app shell. Install fails if any of these fail. */
 const PRECACHE_URLS = [
@@ -26,6 +26,7 @@ const PRECACHE_URLS = [
   'js/app-state.js',
   'js/solver.js',
   'js/nutrition.js',
+  'js/nutrition-targets.js',
   'js/shopping-list.js',
   'js/format.js'
 ];
