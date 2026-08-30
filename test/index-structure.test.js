@@ -53,3 +53,47 @@ test('the submit button starts disabled until recipe data has loaded', () => {
   const submit = html.match(/<button type="submit"[\s\S]*?>/)[0];
   assert.match(submit, /\bdisabled\b/, 'submit must ship disabled and be enabled on load');
 });
+
+test('main is not a blanket aria-live region', () => {
+  // REGRESSION: aria-live="polite" on <main> re-announced the entire results
+  // screen (plan, chart data, shopping list) on every single state change.
+  // app.js now moves focus to the transitioned-to screen instead — see
+  // moveFocus() — so the live region has to go, not just move.
+  const main = html.match(/<main[^>]*>/)[0];
+  assert.doesNotMatch(main, /aria-live/, '<main> must not carry aria-live');
+});
+
+test('every screen is a programmatic focus target for screen transitions', () => {
+  // app.js focuses screens.get(state.screen) on transition; each <section
+  // data-screen="..."> must be focusable via tabindex="-1" (not tab-reachable,
+  // focusable only from JS) for that to do anything.
+  const sections = [...html.matchAll(/<section data-screen="[^"]+"([^>]*)>/g)];
+  assert.equal(sections.length, 4, 'expected 4 screens (input, calculating, results, empty)');
+  for (const [, attrs] of sections) {
+    assert.match(attrs, /tabindex="-1"/, 'every screen section needs tabindex="-1"');
+  }
+});
+
+test('form-error and app-error are focusable so moveFocus() can land on them', () => {
+  const formError = html.match(/<p id="form-error"[^>]*>/)[0];
+  const appError = html.match(/<p id="app-error"[^>]*>/)[0];
+  assert.match(formError, /tabindex="-1"/);
+  assert.match(appError, /tabindex="-1"/);
+});
+
+test('Tagalog UI copy is marked lang="tl" since the page is lang="en"', () => {
+  for (const phrase of ['Magkano ang budget?', 'Gawin ang plano', 'Mga putahe', 'Kabuuan', 'Kulang pa ang budget']) {
+    const idx = html.indexOf(phrase);
+    assert.ok(idx !== -1, `expected to find "${phrase}" in index.html`);
+    const tagStart = html.lastIndexOf('<', idx);
+    const tag = html.slice(tagStart, idx);
+    assert.match(tag, /lang="tl"/, `"${phrase}" should be inside an element with lang="tl"`);
+  }
+});
+
+test('the results screen has a hidden capped-plan note wired to data-bind="cappedNote"', () => {
+  // See app-state.js `capped` and app.js renderResults() — surfaces the
+  // "maxPortions caps the plan" case from the DEVNOTES UX-polish backlog.
+  const note = html.match(/<p data-bind="cappedNote"[^>]*>/)[0];
+  assert.match(note, /\bhidden\b/, 'cappedNote must start hidden; app.js reveals it');
+});

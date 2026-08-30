@@ -43,6 +43,7 @@ export function createAppState() {
     shoppingList: null,
     coverage: null,
     minimumBudget: null,
+    capped: false,
 
     subscribe(listener) {
       listeners.add(listener);
@@ -86,6 +87,7 @@ export function createAppState() {
         state.shoppingList = null;
         state.coverage = null;
         state.minimumBudget = minimumViableBudget(recipes, state.familySize);
+        state.capped = false;
         state.screen = 'empty';
         return notify();
       }
@@ -94,6 +96,12 @@ export function createAppState() {
       state.shoppingList = buildShoppingList(plan);
       state.coverage = calculateCoverage(plan);
       state.minimumBudget = null;
+      // True when every meal already sits at its recipe's maxPortions cap and
+      // budget is left unspent — the case where a bigger budget would not have
+      // changed this plan. See DEVNOTES.md "UX polish" backlog.
+      state.capped =
+        plan.totalCost < plan.budget &&
+        plan.meals.every((meal) => meal.portions >= (meal.recipe.maxPortions ?? 1));
       state.screen = 'results';
       notify();
     },
@@ -106,6 +114,7 @@ export function createAppState() {
       state.shoppingList = null;
       state.coverage = null;
       state.minimumBudget = null;
+      state.capped = false;
       notify();
     }
   };

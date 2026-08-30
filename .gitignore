@@ -18,3 +18,8 @@ desktop.ini
 # Logs
 *.log
 npm-debug.log*
+
+.vercel
+
+# Local working notes — not part of the submission
+AUDIT.md

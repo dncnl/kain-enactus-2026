@@ -22,6 +22,7 @@ const bind = (name) => document.querySelector(`[data-bind="${name}"]`);
 
 let recipes = [];
 let chart = null;
+let previousScreen = null;
 
 /* ── data ─────────────────────────────────────────────────────────────── */
 
@@ -55,7 +56,24 @@ function render(state) {
 
   if (state.screen === 'results') renderResults(state);
   if (state.screen === 'empty') renderEmpty(state);
+  moveFocus(state);
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/**
+ * Replaces the old `aria-live="polite"` on <main>, which re-announced the
+ * entire results screen on every state change. Instead, move focus to what
+ * actually needs a screen reader's attention: the validation alert when one
+ * appears, or the newly-shown screen's container on a real transition. A
+ * fatal #app-error is sticky (see showFatal) so it is never re-focused here.
+ */
+function moveFocus(state) {
+  if (state.error) {
+    document.getElementById('form-error').focus();
+  } else if (state.screen !== previousScreen) {
+    screens.get(state.screen)?.focus();
+  }
+  previousScreen = state.screen;
 }
 
 function renderResults(state) {
@@ -65,6 +83,9 @@ function renderResults(state) {
   bind('budget').textContent = formatPeso(plan.budget);
   bind('familySize').textContent = `${plan.familySize} ${plan.familySize === 1 ? 'person' : 'people'}`;
   bind('leftover').textContent = formatPeso(plan.budget - plan.totalCost);
+
+  const cappedNote = bind('cappedNote');
+  if (cappedNote) cappedNote.hidden = !state.capped;
 
   bind('meals').replaceChildren(...plan.meals.map(mealCard));
   bind('coverage').replaceChildren(...NUTRIENTS.map(({ key }) => coverageRow(coverage[key])));
@@ -216,6 +237,7 @@ function showFatal(message) {
   const error = document.getElementById('app-error');
   error.hidden = false;
   error.textContent = message;
+  error.focus();
 }
 
 /* ── boot ─────────────────────────────────────────────────────────────── */

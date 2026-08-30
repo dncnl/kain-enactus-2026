@@ -77,6 +77,56 @@ test('reset returns to input and clears the previous plan', () => {
   assert.equal(state.plan, null);
 });
 
+test('capped is false when the plan still has room to spend more, or spends it all', () => {
+  const state = createAppState();
+  state.submit({ budget: 300, familySize: 4 });
+  state.finish(THREE_RECIPES);
+  assert.equal(state.capped, false);
+});
+
+test('capped is true when every meal is already at its maxPortions and budget is left over', () => {
+  // A is cheap and high-value, capped at 2 portions; B is far too expensive for
+  // the leftover once A maxes out, so the solver has nothing else to spend on.
+  const recipes = [
+    {
+      id: 'a', name: 'A', servings: 1, costPerServing: 10, maxPortions: 2,
+      nutritionPerServing: { calories: 500, protein: 20, iron: 5, vitaminA: 100 },
+      ingredients: [{ name: 'X', quantity: 1, unit: 'g', cost: 10 }]
+    },
+    {
+      id: 'b', name: 'B', servings: 1, costPerServing: 100, maxPortions: 1,
+      nutritionPerServing: { calories: 50, protein: 1, iron: 0.1, vitaminA: 1 },
+      ingredients: [{ name: 'Y', quantity: 1, unit: 'g', cost: 100 }]
+    }
+  ];
+  const state = createAppState();
+  state.submit({ budget: 25, familySize: 1 });
+  state.finish(recipes);
+  assert.equal(state.plan.meals.length, 1);
+  assert.equal(state.plan.meals[0].portions, 2);
+  assert.ok(state.plan.totalCost < state.plan.budget);
+  assert.equal(state.capped, true);
+});
+
+test('capped resets to false after a new plan is calculated', () => {
+  const recipes = [
+    {
+      id: 'a', name: 'A', servings: 1, costPerServing: 10, maxPortions: 2,
+      nutritionPerServing: { calories: 500, protein: 20, iron: 5, vitaminA: 100 },
+      ingredients: [{ name: 'X', quantity: 1, unit: 'g', cost: 10 }]
+    }
+  ];
+  const state = createAppState();
+  state.submit({ budget: 25, familySize: 1 });
+  state.finish(recipes);
+  assert.equal(state.capped, true);
+  state.reset();
+  assert.equal(state.capped, false);
+  state.submit({ budget: 300, familySize: 4 });
+  state.finish(THREE_RECIPES);
+  assert.equal(state.capped, false);
+});
+
 test('notifies subscribers on every transition so the DOM can re-render', () => {
   const seen = [];
   const state = createAppState();

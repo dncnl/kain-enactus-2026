@@ -2,369 +2,369 @@
   {
     "name": "Ampalaya",
     "unit": "g",
-    "pricePerUnit": 0.12,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.1705,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price of Selected Agri-Fishery Commodities in NCR Markets",
+    "market": "DA Bantay Presyo NCR retail price bulletin (public markets across Metro Manila) — not Pampanga-specific, see DEVNOTES",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Bagoong",
     "unit": "g",
-    "pricePerUnit": 0.45,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.1844,
+    "source": "Pangasinan Boneless Bagoong (isda), 320ml @ ₱59.00 — Alberto's Fresh Market online store; density assumed ~1g/ml to convert ml->g",
+    "market": "Alberto's Fresh Market (PH online grocer)",
+    "pricedOn": "2026-08-30"
   },
   {
     "name": "Baguio beans",
     "unit": "g",
-    "pricePerUnit": 0.16,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.1959,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, listed as 'Habichuelas/Baguio Beans, Local'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Bangus",
     "unit": "g",
-    "pricePerUnit": 0.22,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.242,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Bangus, Medium (3-4 pcs/kg)'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Bay leaf",
     "unit": "g",
-    "pricePerUnit": 2.5,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.915,
+    "source": "Average of two independent listings: Carousell PH (Dried Dahon ng Laurel, 100g @ ₱88) and GoodFinds/F!NDS by Purple Tag (Dahon ng Laurel 100g @ ₱95, goodfinds.ph/product/dahon-ng-laurel-100g). No chain supermarket stocks packaged bay leaf as a listed SKU — it is a dried-goods/wet-market item.",
+    "market": "Carousell PH + GoodFinds online grocery (two independent retailers)",
+    "pricedOn": "2026-08-30"
   },
   {
     "name": "Carrot",
     "unit": "g",
-    "pricePerUnit": 0.15,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.1142,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Carrots, Local (8-10 pcs/kg)'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Cauliflower",
     "unit": "g",
-    "pricePerUnit": 0.1833,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.2643,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Cauliflower, Local'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Chicken",
     "unit": "g",
-    "pricePerUnit": 0.2143,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.202,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Whole Chicken, Local, Fully Dressed'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Chicken liver",
     "unit": "g",
-    "pricePerUnit": 0.2,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.2372,
+    "source": "DA Daily Price Index, NCR, 'Chicken Liver, Local' (not in the weekly bulletin, pulled from the daily one)",
+    "market": "DA Daily Price Index, NCR selected wet markets",
+    "pricedOn": "2026-08-30"
   },
   {
     "name": "Chili",
     "unit": "g",
-    "pricePerUnit": 0.5,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.1487,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Chilli (Green), Local, Haba/Panigang' — siling haba, the variety this bulletin tracks (siling labuyo is not tracked separately)",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Coconut milk",
     "unit": "ml",
-    "pricePerUnit": 0.15,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.1575,
+    "source": "Jolly Pure Goodness Coconut Milk Gata, 400ml @ ₱63.00 — Robinsons Supermarket online catalog",
+    "market": "Robinsons Supermarket online",
+    "pricedOn": "2026-08-30"
   },
   {
     "name": "Cooking oil",
     "unit": "ml",
-    "pricePerUnit": 0.48,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.137,
+    "source": "Golden Fiesta vegetable oil, 1L @ ₱137.00 — Magic Star Supermarket online catalog",
+    "market": "Magic Star Supermarket online",
+    "pricedOn": "2026-08-30"
   },
   {
     "name": "Cornstarch",
     "unit": "g",
-    "pricePerUnit": 0.3333,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.0975,
+    "source": "Cream Pure Cornstarch, 400g @ ₱39.00 — Robinsons Supermarket online catalog",
+    "market": "Robinsons Supermarket online",
+    "pricedOn": "2026-08-30"
   },
   {
     "name": "Dried fish",
     "unit": "g",
     "pricePerUnit": 0.175,
-    "source": "mock (median of prior hand-entered values)",
+    "source": "mock — confirmed absent from DA Bantay Presyo (NCR/regional), PSA OpenSTAT's 11 commodity tables, and the BFAR Monthly National Consolidated Price Monitoring Report (fresh/live fish only, no dried/salted/smoked products) as of 2026-08-30; genuinely untracked by PH government price bulletins, needs an actual market visit",
     "market": null,
     "pricedOn": null
   },
   {
     "name": "Eggs",
     "unit": "pc",
-    "pricePerUnit": 10,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 8.02,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Chicken Egg (White, Medium), 56-60 grams/pc'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Fish sauce",
     "unit": "ml",
-    "pricePerUnit": 0.3333,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.0814,
+    "source": "DTI SRP bulletin for basic necessities, Datu Puti Patis (Gin/PET Bottle), 350ml, SRP ₱28.50",
+    "market": "DTI SRP bulletin (effective 2026-05-11)",
+    "pricedOn": "2026-05-11"
   },
   {
     "name": "Galunggong",
     "unit": "g",
-    "pricePerUnit": 0.2,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.3182,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Galunggong, Local, Male, Medium (12-14 pcs/kg)'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Garlic",
     "unit": "g",
-    "pricePerUnit": 0.4,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.15,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Garlic, Imported' (native garlic priced far higher at 356.00/kg in the same bulletin)",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Ginger",
     "unit": "g",
-    "pricePerUnit": 0.2667,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.185,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Ginger, Local, Medium (150-300 gm)'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Ground pork",
     "unit": "g",
-    "pricePerUnit": 0.1667,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.3532,
+    "source": "No distinct DA line item for ground pork/giniling; proxy = DA average of Pork Belly (Liempo) 380.05/kg and Pork Picnic Shoulder (Kasim) 326.40/kg, the cuts commonly ground to order (same derivation as \"Pork\" below)",
+    "market": "DA Bantay Presyo NCR retail price bulletin (proxy, not a direct line item)",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Kalabasa",
     "unit": "g",
-    "pricePerUnit": 0.08,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.0676,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Squash, Suprema Variety'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Kangkong",
     "unit": "g",
-    "pricePerUnit": 0.08,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.0801,
+    "source": "PSA OpenSTAT, Leafy Vegetables: Retail Prices of Agricultural Commodities (2018-based), table 0042M4ARN06 — openstat.psa.gov.ph (public PX-Web API)",
+    "market": "NCR average retail price",
+    "pricedOn": "2026-07-31"
   },
   {
     "name": "Labanos",
     "unit": "g",
-    "pricePerUnit": 0.0833,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.1119,
+    "source": "PSA OpenSTAT, Rootcrops: Retail Prices of Agricultural Commodities (2018-based), table 0042M4ARN02 — openstat.psa.gov.ph (public PX-Web API)",
+    "market": "NCR average retail price",
+    "pricedOn": "2026-07-31"
   },
   {
     "name": "Malunggay",
     "unit": "g",
-    "pricePerUnit": 0.125,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.0658,
+    "source": "PSA OpenSTAT, Leafy Vegetables: Retail Prices of Agricultural Commodities (2018-based), table 0042M4ARN06 — openstat.psa.gov.ph (public PX-Web API)",
+    "market": "Philippines national average (NCR not separately reported for this commodity)",
+    "pricedOn": "2026-07-31"
   },
   {
     "name": "Monggo",
     "unit": "g",
-    "pricePerUnit": 0.14,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.1481,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Mungbean' (Legumes section)",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Okra",
     "unit": "g",
-    "pricePerUnit": 0.12,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.0996,
+    "source": "PSA OpenSTAT, Fruit Vegetables: Retail Prices of Agricultural Commodities (2018-based), table 0042M4ARN05 — openstat.psa.gov.ph (public PX-Web API)",
+    "market": "Philippines national average (NCR not separately reported for this commodity)",
+    "pricedOn": "2026-07-31"
   },
   {
     "name": "Onion",
     "unit": "g",
-    "pricePerUnit": 0.16,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.1114,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Red Onion, Local (13-15 pcs/kg)'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Peppercorn",
     "unit": "g",
-    "pricePerUnit": 1.6,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 2.4714,
+    "source": "McCormick Black Pepper Whole, 28g @ ₱69.20 — ShopMetro.ph online grocery",
+    "market": "ShopMetro.ph online grocery",
+    "pricedOn": "2026-08-30"
   },
   {
     "name": "Pork",
     "unit": "g",
-    "pricePerUnit": 0.3,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.3532,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin — average of 'Pork Belly (Liempo), Local' (380.05/kg) and 'Pork Picnic Shoulder (Kasim), Local' (326.40/kg)",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Potato",
     "unit": "g",
-    "pricePerUnit": 0.09,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.1462,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'White Potato, Local (10-12 pcs/kg)'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Repolyo",
     "unit": "g",
-    "pricePerUnit": 0.07,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.0964,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin — average of three local cabbage varieties (Rare Ball 96.47, Scorpio 98.69, Wonder Ball 93.97 per kg); no single generic \"cabbage\" line",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Rice",
     "unit": "g",
-    "pricePerUnit": 0.1,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.0484,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Local Commercial Rice, Well Milled, 1-19% bran streak'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Saging saba",
     "unit": "pc",
-    "pricePerUnit": 5,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 4.48,
+    "source": "Computed: DA Bantay Presyo NCR bulletin price (Banana, Saba = ₱64.00/kg, week of 2026-08-17 to 08-23) x DOST-FNRI Food Exchange Lists for Meal Planning standard piece weight (1 piece saba, 10x4cm = 70g as purchased). FNRI weight seen via multiple independent secondary reproductions (Course Hero/Studocu/Scribd), not the primary FNRI PDF directly (i.fnri.dost.gov.ph is login-gated) — a widely-cited nutrition-dietetics constant, but flagging the indirection.",
+    "market": "DA Bantay Presyo NCR (price) + DOST-FNRI Food Exchange Lists (piece weight)",
+    "pricedOn": "2026-08-30"
   },
   {
     "name": "Salt",
     "unit": "g",
-    "pricePerUnit": 0.4,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.039,
+    "source": "DTI SRP bulletin for basic necessities, Lasap Iodized Salt, 250g, SRP ₱9.75",
+    "market": "DTI SRP bulletin (effective 2026-05-11)",
+    "pricedOn": "2026-05-11"
   },
   {
     "name": "Sardines",
     "unit": "can",
-    "pricePerUnit": 22,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 20.5,
+    "source": "DTI SRP bulletin for basic necessities, 555 Bonus Pack canned sardines in tomato sauce, 155g, SRP ₱20.50",
+    "market": "DTI SRP bulletin (effective 2026-05-11)",
+    "pricedOn": "2026-05-11"
   },
   {
     "name": "Sayote",
     "unit": "g",
-    "pricePerUnit": 0.08,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.0666,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Chayote, Medium (301-400 g)'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Shrimp paste",
     "unit": "g",
-    "pricePerUnit": 0.4667,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.524,
+    "source": "Barrio Fiesta Bagoong (Sauteed Shrimp Paste) Regular, 500g @ ₱262.00 — WalterMart Delivery, official chain-supermarket site, verified live via the page's embedded schema.org product data (waltermartdelivery.com.ph). Replaces the previous Puregold figure: Puregold's entire product-catalog subsystem is now offline (all pages 404), so that source can no longer be re-verified.",
+    "market": "WalterMart supermarket chain, official delivery site",
+    "pricedOn": "2026-08-30"
   },
   {
     "name": "Sinigang mix",
     "unit": "g",
-    "pricePerUnit": 0.3,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.6818,
+    "source": "Knorr Sinigang sa Sampalok Mix Original, 22g @ ₱15.00 — Robinsons Supermarket online catalog",
+    "market": "Robinsons Supermarket online",
+    "pricedOn": "2026-08-30"
   },
   {
     "name": "Sitaw",
     "unit": "g",
-    "pricePerUnit": 0.12,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.168,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Pole Sitao, 3-4 Small Bundles'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Sitsaro",
     "unit": "g",
     "pricePerUnit": 0.2,
-    "source": "mock (median of prior hand-entered values)",
+    "source": "mock — confirmed absent from DA Bantay Presyo, all 11 PSA OpenSTAT commodity tables, and La Trinidad (Benguet) trading-post listings (the main highland source for this vegetable — other highland veg like beans/cabbage/carrots are listed there, sitsaro is not) as of 2026-08-30; genuinely untracked, needs an actual market visit",
     "market": null,
     "pricedOn": null
   },
   {
     "name": "Soy sauce",
     "unit": "ml",
-    "pricePerUnit": 0.25,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.0607,
+    "source": "DTI SRP bulletin for basic necessities, Datu Puti Soy Sauce (Gin/PET Bottle), 350ml, SRP ₱21.25",
+    "market": "DTI SRP bulletin (effective 2026-05-11)",
+    "pricedOn": "2026-05-11"
   },
   {
     "name": "Talong",
     "unit": "g",
-    "pricePerUnit": 0.1,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.1788,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Eggplant, 3-4 Small Bundles'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Togue",
     "unit": "g",
     "pricePerUnit": 0.0667,
-    "source": "mock (median of prior hand-entered values)",
+    "source": "mock — confirmed absent from DA Bantay Presyo, all 11 PSA OpenSTAT commodity tables (Beans and Legumes tracks dry \"Monggo, Green\" but not its sprouted form), and online grocer product search (zero results) as of 2026-08-30; genuinely untracked, needs an actual market visit",
     "market": null,
     "pricedOn": null
   },
   {
     "name": "Tokwa",
     "unit": "g",
-    "pricePerUnit": 0.14,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.1059,
+    "source": "Kem-Kang Special Tokwa, 380g — Daily Supermarket, Inc. (daily.com.ph), a live Philippine online personal-shopper supermarket. Tofu is a processed soy product outside every agri retail-price series checked (DA, PSA, BFAR all track raw agricultural commodities only), so a named retailer is the appropriate source here.",
+    "market": "Daily Supermarket, Inc. (daily.com.ph), Metro Manila delivery",
+    "pricedOn": "2026-08-30"
   },
   {
     "name": "Tomato",
     "unit": "g",
-    "pricePerUnit": 0.15,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.1128,
+    "source": "DA Bantay Presyo Monitoring, Weekly Average Retail Price bulletin, 'Tomato, 15-18 pcs/kg'",
+    "market": "DA Bantay Presyo NCR retail price bulletin",
+    "pricedOn": "2026-08-23"
   },
   {
     "name": "Vinegar",
     "unit": "ml",
-    "pricePerUnit": 0.2,
-    "source": "mock (median of prior hand-entered values)",
-    "market": null,
-    "pricedOn": null
+    "pricePerUnit": 0.055,
+    "source": "DTI SRP bulletin for basic necessities, Datu Puti White Vinegar (Gin/PET Bottle), 350ml, SRP ₱19.25",
+    "market": "DTI SRP bulletin (effective 2026-05-11)",
+    "pricedOn": "2026-05-11"
   }
 ]

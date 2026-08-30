@@ -7,8 +7,8 @@
 <meta name="description" content="Turn a fixed food budget into the most nutritious meal plan your family can afford. Works offline." />
 <meta name="theme-color" content="#FFCC40" />
 <link rel="manifest" href="manifest.webmanifest" />
-<link rel="icon" href="assets/kain-logo.png" />
-<link rel="apple-touch-icon" href="assets/kain-logo.png" />
+<link rel="icon" href="assets/icon-192.png" />
+<link rel="apple-touch-icon" href="assets/icon-192-maskable.png" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -66,11 +66,15 @@
     </div>
   </header>
 
-  <main class="flex-1 w-full max-w-lg mx-auto px-5 py-7" aria-live="polite">
+  <main class="flex-1 w-full max-w-lg mx-auto px-5 py-7">
 
     <!-- ============ SCREEN 1: INPUT ============ -->
-    <section data-screen="input">
-      <h1 class="font-head font-extrabold text-3xl leading-tight mb-2">Magkano ang budget?</h1>
+    <!-- tabindex="-1" on every screen is a focus target only (not tab-reachable):
+         app.js moves focus here on screen change so a screen reader's cursor
+         follows the transition instead of the whole <main> re-announcing on
+         every state change (that was the old aria-live="polite" behaviour). -->
+    <section data-screen="input" tabindex="-1">
+      <h1 lang="tl" class="font-head font-extrabold text-3xl leading-tight mb-2">Magkano ang budget?</h1>
       <p class="text-sm opacity-70 mb-7">Enter what you can spend today. Kain finds the most nutritious plan that fits.</p>
 
       <form id="plan-form" novalidate class="space-y-6">
@@ -98,17 +102,18 @@
 
         <!-- Validation messages. Owned by render(), rewritten on every state
              change — never write app-level failures here, they get clobbered. -->
-        <p id="form-error" role="alert" hidden
+        <p id="form-error" role="alert" tabindex="-1" hidden
            class="bubble bg-red-100 px-4 py-3 text-sm font-medium"></p>
 
         <!-- App-level failures (e.g. recipe data unavailable). Owned by
-             showFatal(); the state machine never touches it, so it persists. -->
-        <p id="app-error" role="alert" hidden
+             showFatal(); the state machine never touches it, so it persists.
+             Text is always Tagalog (see showFatal() call sites in app.js). -->
+        <p id="app-error" role="alert" tabindex="-1" lang="tl" hidden
            class="bubble bg-red-100 px-4 py-3 text-sm font-medium"></p>
 
         <!-- Ships disabled: solving against an unloaded recipe list produces a
              bogus "nothing fits your budget" screen. app.js enables it. -->
-        <button type="submit" disabled data-bind="submit"
+        <button type="submit" disabled data-bind="submit" lang="tl"
                 class="press w-full rounded-full border-[3px] border-black bg-kain-yellow py-4 font-head text-lg font-extrabold shadow-pop-lg disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed">
           Gawin ang plano
         </button>
@@ -118,14 +123,14 @@
     </section>
 
     <!-- ============ SCREEN 2: CALCULATING ============ -->
-    <section data-screen="calculating" hidden class="py-16 text-center">
+    <section data-screen="calculating" tabindex="-1" hidden class="py-16 text-center">
       <div class="simmer mx-auto mb-8 h-24 w-24 rounded-full border-[3px] border-black bg-kain-yellow shadow-pop-lg"></div>
-      <h2 class="font-head text-2xl font-extrabold">Naghahanap ng pinakamainam…</h2>
+      <h2 lang="tl" class="font-head text-2xl font-extrabold">Naghahanap ng pinakamainam…</h2>
       <p class="mt-2 text-sm opacity-70">Checking every combination that fits your budget.</p>
     </section>
 
     <!-- ============ SCREEN 3: RESULTS ============ -->
-    <section data-screen="results" hidden class="space-y-7">
+    <section data-screen="results" tabindex="-1" hidden class="space-y-7">
       <div class="bubble bg-kain-green text-white shadow-pop-lg p-5">
         <p class="font-head text-xs font-bold uppercase tracking-wider opacity-80">Your plan</p>
         <p class="font-head text-4xl font-extrabold mt-1" data-bind="totalCost">₱0</p>
@@ -135,13 +140,21 @@
         </p>
       </div>
 
+      <!-- Shown only when every recipe in the plan is already at its maxPortions
+           cap with budget left unspent — see app-state.js `capped`. -->
+      <p data-bind="cappedNote" lang="tl" hidden
+         class="bubble bg-kain-yellow/40 px-4 py-3 text-xs font-medium">
+        Naabot na ng mga putaheng ito ang pinakamataas na bilang ng beses na puwede
+        silang lutuin sa isang araw, kaya may natitirang budget na hindi pa nagagamit.
+      </p>
+
       <section>
-        <h2 class="font-head text-xl font-extrabold mb-3">Mga putahe</h2>
+        <h2 lang="tl" class="font-head text-xl font-extrabold mb-3">Mga putahe</h2>
         <ul data-bind="meals" class="space-y-3"></ul>
       </section>
 
       <section>
-        <h2 class="font-head text-xl font-extrabold mb-1">Nutrisyon na natugunan</h2>
+        <h2 lang="tl" class="font-head text-xl font-extrabold mb-1">Nutrisyon na natugunan</h2>
         <p class="text-xs opacity-60 mb-3">Share of the daily need this plan delivers for the whole family.</p>
         <div class="bubble bg-white shadow-pop p-4">
           <!-- Chart.js runs with maintainAspectRatio:false, which sizes the
@@ -157,27 +170,27 @@
       </section>
 
       <section>
-        <h2 class="font-head text-xl font-extrabold mb-1">Listahan sa palengke</h2>
+        <h2 lang="tl" class="font-head text-xl font-extrabold mb-1">Listahan sa palengke</h2>
         <p class="text-xs opacity-60 mb-3">Exact quantities — nothing extra to spoil at home.</p>
         <div class="bubble bg-white shadow-pop overflow-hidden">
           <ul data-bind="shopping" class="divide-y-2 divide-black/10"></ul>
           <div class="flex items-center justify-between bg-kain-yellow border-t-[3px] border-black px-4 py-3">
-            <span class="font-head font-extrabold">Kabuuan</span>
+            <span lang="tl" class="font-head font-extrabold">Kabuuan</span>
             <span class="font-head font-extrabold text-lg" data-bind="listTotal">₱0</span>
           </div>
         </div>
       </section>
 
-      <button type="button" data-action="reset"
+      <button type="button" data-action="reset" lang="tl"
               class="press w-full rounded-full border-[3px] border-black bg-white py-4 font-head text-lg font-extrabold shadow-pop">
         Bagong budget
       </button>
     </section>
 
     <!-- ============ SCREEN 4: EMPTY / NOTHING FITS ============ -->
-    <section data-screen="empty" hidden class="py-10 text-center">
+    <section data-screen="empty" tabindex="-1" hidden class="py-10 text-center">
       <div class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full border-[3px] border-black bg-white shadow-pop-lg text-4xl">🍚</div>
-      <h2 class="font-head text-2xl font-extrabold">Kulang pa ang budget</h2>
+      <h2 lang="tl" class="font-head text-2xl font-extrabold">Kulang pa ang budget</h2>
       <p class="mx-auto mt-3 max-w-xs text-sm opacity-75">
         No complete meal for <span data-bind="emptyFamily">0</span> fits
         <span data-bind="emptyBudget">₱0</span> yet.
@@ -186,7 +199,7 @@
         <p class="text-xs font-bold uppercase tracking-wide opacity-70">Try at least</p>
         <p class="font-head text-3xl font-extrabold" data-bind="minimumBudget">₱0</p>
       </div>
-      <button type="button" data-action="reset"
+      <button type="button" data-action="reset" lang="tl"
               class="press mt-7 w-full rounded-full border-[3px] border-black bg-white py-4 font-head text-lg font-extrabold shadow-pop">
         Baguhin ang budget
       </button>
