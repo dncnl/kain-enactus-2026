@@ -7,7 +7,7 @@
  * writing an `if` about *what the plan means* here, it belongs in a tested
  * module instead.
  */
-import { createAppState } from './app-state.js';
+import { createAppState, MAX_FAMILY_SIZE } from './app-state.js';
 import { NUTRIENTS } from './nutrition.js';
 import { formatPeso, formatQuantity, barWidth, formatPortions } from './format.js';
 
@@ -56,8 +56,14 @@ function render(state) {
 
   if (state.screen === 'results') renderResults(state);
   if (state.screen === 'empty') renderEmpty(state);
-  moveFocus(state);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // A validation error re-renders the input screen without changing it, so
+  // gate the scroll on a real screen change — otherwise every mistyped
+  // budget yanks the page back to the top it never left.
+  const screenChanged = state.screen !== previousScreen;
+  moveFocus(state, screenChanged);
+  if (screenChanged) window.scrollTo({ top: 0, behavior: 'smooth' });
+  previousScreen = state.screen;
 }
 
 /**
@@ -67,13 +73,12 @@ function render(state) {
  * appears, or the newly-shown screen's container on a real transition. A
  * fatal #app-error is sticky (see showFatal) so it is never re-focused here.
  */
-function moveFocus(state) {
+function moveFocus(state, screenChanged) {
   if (state.error) {
     document.getElementById('form-error').focus();
-  } else if (state.screen !== previousScreen) {
+  } else if (screenChanged) {
     screens.get(state.screen)?.focus();
   }
-  previousScreen = state.screen;
 }
 
 function renderResults(state) {
@@ -221,7 +226,7 @@ document.getElementById('plan-form').addEventListener('submit', (event) => {
 for (const button of document.querySelectorAll('[data-step]')) {
   button.addEventListener('click', () => {
     const next = (Number.parseInt(familyInput.value, 10) || 1) + Number(button.dataset.step);
-    familyInput.value = Math.max(1, next);
+    familyInput.value = Math.min(MAX_FAMILY_SIZE, Math.max(1, next));
   });
 }
 

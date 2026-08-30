@@ -39,6 +39,16 @@ test('the budget input declares an upper bound', () => {
   assert.match(input, /\bmin="1"/, 'budget input should keep its min');
 });
 
+test('the family size input declares an upper bound', () => {
+  // REGRESSION: no max clamp meant a slipped extra digit (450 instead of 4)
+  // silently multiplied every recipe's cost 100x. See app-state.test.js's
+  // MAX_FAMILY_SIZE guard for the actual enforcement; this checks the markup
+  // agrees.
+  const input = html.match(/<input id="familySize"[\s\S]*?\/>/)[0];
+  assert.match(input, /\bmax="(\d+)"/, 'familySize input needs a max attribute');
+  assert.match(input, /\bmin="1"/, 'familySize input should keep its min');
+});
+
 test('validation errors and app-level failures have separate elements', () => {
   // REGRESSION: render() rewrites #form-error from state.error on every
   // notification, which wiped the "recipe data failed to load" message as soon

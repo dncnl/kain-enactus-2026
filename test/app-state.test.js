@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createAppState, MAX_BUDGET } from '../js/app-state.js';
+import { createAppState, MAX_BUDGET, MAX_FAMILY_SIZE } from '../js/app-state.js';
 import { THREE_RECIPES } from './fixtures.js';
 
 test('starts on the input screen', () => {
@@ -66,6 +66,23 @@ test('rejects a family size below one', () => {
   state.submit({ budget: 300, familySize: 0 });
   assert.equal(state.screen, 'input');
   assert.match(state.error, /family/i);
+});
+
+test('rejects a family size above the supported maximum', () => {
+  // REGRESSION: the stepper has no upper clamp and typing directly into the
+  // field bypasses it entirely, so a slipped extra digit (e.g. 450 instead of
+  // 4) would otherwise silently multiply every recipe's cost 100x.
+  const state = createAppState();
+  state.submit({ budget: 300, familySize: MAX_FAMILY_SIZE + 1 });
+  assert.equal(state.screen, 'input');
+  assert.match(state.error, /family/i);
+});
+
+test('accepts a family size exactly at the maximum', () => {
+  const state = createAppState();
+  state.submit({ budget: 300, familySize: MAX_FAMILY_SIZE });
+  assert.equal(state.screen, 'calculating');
+  assert.equal(state.error, null);
 });
 
 test('reset returns to input and clears the previous plan', () => {

@@ -23,6 +23,18 @@ import { calculateCoverage } from './nutrition.js';
  */
 export const MAX_BUDGET = 100000;
 
+/**
+ * Highest family size the form accepts.
+ *
+ * Unlike MAX_BUDGET this is not a crash guard — solve()'s memory cost scales
+ * with budget, not family size, so nothing breaks above this number. It is
+ * input sanity only: the stepper has no upper clamp and typing directly into
+ * the field bypasses it entirely, so a slipped extra digit (450 instead of 4)
+ * would otherwise silently multiply every recipe's cost 100x and produce a
+ * baffling "nothing fits your budget" result instead of a clear error.
+ */
+export const MAX_FAMILY_SIZE = 20;
+
 /** Cheapest single meal that feeds the whole family, in pesos. */
 function minimumViableBudget(recipes, familySize) {
   const costs = recipes
@@ -64,6 +76,11 @@ export function createAppState() {
       }
       if (!Number.isFinite(familySize) || familySize < 1) {
         state.error = 'Family size must be at least one person.';
+        state.screen = 'input';
+        return notify();
+      }
+      if (familySize > MAX_FAMILY_SIZE) {
+        state.error = `That family size is larger than Kain handles. Please enter ${MAX_FAMILY_SIZE} or fewer.`;
         state.screen = 'input';
         return notify();
       }
