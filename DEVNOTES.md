@@ -25,13 +25,14 @@ Enactus Philippines 2026, Early-Stage Project Track, Angeles University Foundati
 | Shopping list | Built, tested |
 | Screen state machine | Built, tested |
 | UI shell (4 screens) | Built |
+| Market mode + persistence | Built, tested — see "After the results screen" below |
 | Offline / PWA | Built and deployed — offline retest on the live URL is still outstanding, see below |
 | Recipe + price data | **43/46 ingredients** now real, dated prices from DA Bantay Presyo, PSA OpenSTAT, DTI SRP, and named retailers. 3 ingredients (dried fish, sitsaro, togue) are confirmed absent from every PH government price series checked (DA, PSA, BFAR) and stay mock — flagged in `data/prices.json`. See "Backend handoff notes" below. |
 | Nutrition targets | Real: PDRI 2015 RNI (male 19-29y), per FDA Circular 2023-009's "general population" reference — see `js/nutrition-targets.js` |
 | PWA icons | Real 192×192 / 512×512, `any` + `maskable`, generated from the logo via `scripts/generate-icons.py` |
 | Deployment | **Live: https://kain-enactus.vercel.app** — HTTPS, service worker headers verified from this machine. A human still needs to do the real-device airplane-mode test, see "Deploy checklist". |
 
-Tests: **63 passing** (`npm test`).
+Tests: **136 passing** (`npm test`).
 
 ---
 
@@ -68,6 +69,58 @@ togue — see Status table) get real prices.
 The plan total and the shopping-list **Kabuuan must always be identical**. They
 are computed by different rounding paths, so a mismatch there is a real bug.
 
+Also check, on the same 300 / 4 run:
+
+| What | Expected |
+|---|---|
+| Under the plan total | *20 servings · about 5 meals for each of 4 people* |
+| Coverage rows | *Kulang* (energy), *Sapat*, *Sapat*, *Sobra* — and the chart bar beside each must be the same colour as its chip |
+| Under the chart | The Tagalog energy-gap note, naming ~21 cups of rice |
+| Under the list heading | *Presyo noong Ago 30 · 43/46 sangkap may pinagkunan* |
+| Tick 3 rows | Running spend = the sum of those 3 rows; ticking all 10 lands exactly on `Kabuuan` |
+| Close the tab, reopen | Budget and family size still filled, **still on the input screen**; re-submit and the ticks come back |
+| *Bagong budget* | Ticks cleared, budget and family size kept |
+| 20 / 4 | Empty screen leads with *2 servings ng Lugaw*, then *Try at least ₱30* |
+
+---
+
+## After the results screen
+
+Everything that matters happens after the plan appears: you walk to the
+palengke, buy things, cook. Three pieces cover that, and all three are additive
+— the four screens and the flow between them are unchanged.
+
+**Persistence (`js/storage.js`).** Only `{budget, familySize}` and the ticked
+shopping-list keys are stored. **Never the plan itself** — a stored plan goes
+stale silently when prices change, while re-solving costs ~19ms and is always
+correct. Restoring deliberately lands on the *input* screen rather than jumping
+to a result, so the user sees what is about to be solved. Every read and write
+is wrapped: `localStorage` is not merely absent in some environments, the
+property access itself throws when a browser blocks site data, and `setItem`
+throws on a full quota. A storage failure must degrade to "the app forgets
+things", never to a broken app. `test/storage.test.js` drives all three cases.
+
+**Market mode.** A checkbox per shopping row and a running spend, measured
+against the *list total* rather than the budget — the list is what actually has
+to be bought, and it is the figure printed directly below as `Kabuuan`. The
+arithmetic is `sumChecked()` in `shopping-list.js`, keyed on `name__unit`, the
+same key `buildShoppingList()` merges on. Ticks are re-validated against the
+plan actually solved (`knownKeys()`), so a stored key from a plan that no longer
+exists is dropped rather than silently inflating the total.
+
+**Sharing.** `formatPlanAsText()` plus `navigator.share`, falling back to the
+clipboard. Plain text on purpose: it survives SMS, Messenger and a screenshot,
+and needs no app or signal at the other end.
+
+### Why `app.js` compares object identity before repainting
+
+The results screen re-renders on every checkbox tick. Rebuilding the meal cards,
+coverage rows and shopping rows each time would drop the focused checkbox and
+restart the chart animation on every tap, so `renderedList` / `renderedCoverage`
+hold the structures currently painted. They change only when `finish()` produces
+a new plan, so identity is enough. This is a render optimisation, not a decision
+about what a plan means — rule 2 below still holds.
+
 ---
 
 ## Architecture rules
@@ -102,11 +155,19 @@ data/recipes.source.json  recipes: quantities only, no costs
           |  npm run build:data   (scripts/build-data.mjs)
           v
 data/recipes.json         GENERATED — the shape the solver reads
+data/meta.json            GENERATED — price vintage + sourced counts, for the UI
 ```
 
+`data/meta.json` exists because `data/prices.json` is build-time only and never
+reaches the browser, while `data/recipes.json` is a bare top-level array the
+solver reads directly — wrapping it in an envelope would break the pinned data
+contract. It carries **no build timestamp on purpose**: every field derives from
+the source data, so an unchanged input produces identical bytes and the CI
+staleness check in `.github/workflows/test.yml` can diff it.
+
 **To change a price:** edit `data/prices.json`, run `npm run build:data`, bump
-`CACHE_NAME` in `sw.js`, commit all three. One line changes one price
-everywhere it is used.
+`CACHE_NAME` in `sw.js`, commit all four (`recipes.json` **and** `meta.json`).
+One line changes one price everywhere it is used.
 
 **To add or change a recipe:** edit `data/recipes.source.json` (quantities only —
 costs are derived), then the same three steps.
@@ -221,7 +282,7 @@ Everything else is generated or is frontend code. You should not need to touch
 
 `sw.js` serves cached responses before the network. **New data will not reach
 anyone who has already opened the app until `CACHE_NAME` is bumped** (`sw.js`,
-currently `kain-v4`). Bump it in the same commit as any data change. This is the
+currently `kain-v6`). Bump it in the same commit as any data change. This is the
 single easiest thing here to get wrong, because it works perfectly on your
 machine and fails only for returning users.
 

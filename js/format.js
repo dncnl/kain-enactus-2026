@@ -32,8 +32,220 @@ export function barWidth(percent) {
   return Math.min(100, Math.max(0, percent));
 }
 
-/** `3, 12` -> `3 batches · 12 servings`. */
-export function formatPortions(portions, servings) {
+/**
+ * `3, 12` -> `3 batches · 12 servings`.
+ *
+ * Given a family size it also says what that means per person: `12 servings`
+ * is a number you have to do arithmetic on, `3 meals each` is not. The third
+ * argument is optional so the two-argument form — quoted in DEVNOTES and the
+ * pitch materials — keeps its exact output.
+ */
+export function formatPortions(portions, servings, familySize) {
   const batch = portions === 1 ? 'batch' : 'batches';
-  return `${portions} ${batch} · ${servings} servings`;
+  const base = `${portions} ${batch} · ${servings} servings`;
+  if (!Number.isFinite(familySize) || familySize < 1) return base;
+  const each = round1(servings / familySize);
+  return `${base} · ${each} ${each === 1 ? 'meal' : 'meals'} each`;
+}
+
+/* ── plain language (ROADMAP B2) ──────────────────────────────────────── */
+
+/**
+ * Rough kcal in one cup of cooked rice, used to state an energy shortfall as
+ * something buyable rather than as kilocalories. Deliberately a round number:
+ * it is a communication device, not a nutrition figure, and nothing derived
+ * from it feeds back into the solver or the coverage percentages.
+ */
+const KCAL_PER_CUP_RICE = 200;
+
+/**
+ * Coverage bands, highest first. The percentage stays on screen either way —
+ * the word is what carries meaning for a user who has never met the letters
+ * "RENI". Tones map onto the colours the chart already uses (see drawChart).
+ */
+const VERDICT_BANDS = [
+  { min: 150, label: 'Sobra', tone: 'over' },
+  { min: 100, label: 'Sapat', tone: 'ok' },
+  { min: 70, label: 'Halos sapat', tone: 'near' },
+  { min: 0, label: 'Kulang', tone: 'low' }
+];
+
+/** `59.3` -> `{ label: 'Kulang', tone: 'low' }`. */
+export function coverageVerdict(percent) {
+  const value = Number.isFinite(percent) ? Math.max(0, percent) : 0;
+  const band = VERDICT_BANDS.find((b) => value >= b.min) ?? VERDICT_BANDS[VERDICT_BANDS.length - 1];
+  return { label: band.label, tone: band.tone };
+}
+
+/**
+ * The A1 decision in one sentence. The solver weights protein and iron above
+ * calories on purpose, so realistic budgets land well short on energy. Rather
+ * than change solver.js — pinned as stable, and every figure quoted anywhere
+ * depends on it — say the shortfall plainly and name the cheapest way to close
+ * it. A family that follows a nutritionally elegant plan and is still hungry
+ * stops using the app; one that is told "add rice" does not.
+ *
+ * Returns null when energy is adequately covered, so the caller hides the note.
+ */
+export function energyGapNote(coverage) {
+  const energy = coverage?.calories;
+  if (!energy || !Number.isFinite(energy.percent) || energy.percent >= 90) return null;
+
+  const shortfall = Math.max(0, (energy.target ?? 0) - (energy.amount ?? 0));
+  if (shortfall <= 0) return null;
+  const cups = Math.max(1, Math.round(shortfall / KCAL_PER_CUP_RICE));
+
+  // The "strong on nutrition, short on energy" framing is only honest when the
+  // plan actually IS strong elsewhere — the A1 case, where the weighting has
+  // bought real protein and iron at the cost of calories. At a budget too small
+  // for anything, every nutrient is short and claiming otherwise would be a
+  // cheerful lie to the user who can least afford one.
+  const lead = OTHER_NUTRIENTS.every((key) => (coverage?.[key]?.percent ?? 0) >= 100)
+    ? 'Malakas sa sustansya ang planong ito pero kulang pa sa enerhiya'
+    : 'Kulang pa sa enerhiya ang planong ito';
+
+  return (
+    `${lead} — mga ${cups} tasang kanin pa ang kailangan ng buong pamilya ` +
+    `para sa isang araw. Kung may matitirang budget, kanin ang pinakamurang pandagdag.`
+  );
+}
+
+/** Everything tracked except energy — see the lead-clause choice above. */
+const OTHER_NUTRIENTS = ['protein', 'iron', 'vitaminA'];
+
+/**
+ * What a plan means per person: `20 servings` is a figure you have to divide,
+ * `5 meals each` is not. Derived entirely from what the plan already carries —
+ * servings and family size — so no number on screen stops being one the solver
+ * produced (ROADMAP A2: presentation only, no data-contract change).
+ *
+ * DELIBERATELY NOT A SPAN OF DAYS. Servings-divided-by-three-meals would put
+ * "about 2 days of food" directly above a chart reading "Energy 59.3%", and
+ * those two statements contradict each other: a serving of munggo is a serving,
+ * not a day's third of a person's calories. Coverage is the honest measure of
+ * how far a plan goes, and it is already on the same screen. If a day dimension
+ * is ever wanted for real, it needs the recipe/plan data contract to carry one
+ * — which per the project's own rule requires both developers to agree first.
+ */
+export function describePlanSpan(plan) {
+  const familySize = Number.isFinite(plan?.familySize) && plan.familySize >= 1 ? plan.familySize : 1;
+  const servings = (plan?.meals ?? []).reduce(
+    (total, meal) => total + (Number.isFinite(meal?.servings) ? meal.servings : 0),
+    0
+  );
+  const mealsEach = round1(servings / familySize);
+  const people = familySize === 1 ? 'person' : 'people';
+
+  return {
+    servings,
+    mealsEach,
+    text:
+      `${servings} servings · about ${mealsEach} ${mealsEach === 1 ? 'meal' : 'meals'} ` +
+      `for each of ${familySize} ${people}`
+  };
+}
+
+/* ── price vintage (ROADMAP B4) ───────────────────────────────────────── */
+
+/** Tagalog month abbreviations, January first. */
+const MONTHS_TL = ['Ene', 'Peb', 'Mar', 'Abr', 'May', 'Hun', 'Hul', 'Ago', 'Set', 'Okt', 'Nob', 'Dis'];
+
+/**
+ * `'2026-08-23'` -> `'Ago 23'`. Parsed by hand rather than through Date:
+ * `new Date('2026-08-23')` is UTC midnight, which renders as the 22nd for
+ * anyone west of Greenwich and as the 23rd in Manila only by luck.
+ */
+export function formatPriceDate(iso) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso ?? ''));
+  if (!match) return null;
+  const month = MONTHS_TL[Number(match[2]) - 1];
+  if (!month) return null;
+  return `${month} ${Number(match[3])}`;
+}
+
+/**
+ * The one line that makes "real, dated market prices" visible to the person
+ * holding the phone — and stays honest as the data ages. Null when the
+ * metadata never arrived, so a missing meta.json simply hides the line rather
+ * than blocking a plan.
+ */
+export function priceVintageLine(meta) {
+  const latest = formatPriceDate(meta?.prices?.latest);
+  if (!latest) return null;
+  const { sourced, total } = meta.prices;
+  const counts =
+    Number.isFinite(sourced) && Number.isFinite(total)
+      ? ` · ${sourced}/${total} sangkap may pinagkunan`
+      : '';
+  return `Presyo noong ${latest}${counts}`;
+}
+
+/* ── market mode (ROADMAP B1) ─────────────────────────────────────────── */
+
+/**
+ * Running total for someone standing at a stall with one hand on the phone.
+ *
+ * Measured against the shopping-list total rather than the budget: the list is
+ * what they actually have to buy, and it is the figure printed directly below
+ * it as `Kabuuan`. Using the budget instead would put two different
+ * denominators on one screen for no gain.
+ */
+export function marketProgress(spent, total, checkedCount, itemCount) {
+  const safeTotal = Number.isFinite(total) && total > 0 ? total : 0;
+  const safeSpent = Math.min(Math.max(Number.isFinite(spent) ? spent : 0, 0), safeTotal);
+  const checked = Number.isFinite(checkedCount) ? checkedCount : 0;
+  const items = Number.isFinite(itemCount) ? itemCount : 0;
+
+  return {
+    percent: safeTotal > 0 ? round1((safeSpent / safeTotal) * 100) : 0,
+    remaining: round2(safeTotal - safeSpent),
+    spentText: `${formatPeso(safeSpent)} of ${formatPeso(safeTotal)}`,
+    itemsText: `${checked}/${items} ${items === 1 ? 'item' : 'items'}`,
+    done: items > 0 && checked >= items
+  };
+}
+
+/**
+ * The plan as plain text, for navigator.share or the clipboard. Plain text on
+ * purpose: it survives SMS, Messenger, a screenshot and a printout, costs
+ * almost nothing to send, and needs no app at the other end — the household
+ * doing the planning and the person walking to the palengke are often not the
+ * same person.
+ */
+export function formatPlanAsText(plan, shoppingList) {
+  const meals = plan?.meals ?? [];
+  const items = shoppingList?.items ?? [];
+  const familySize = Number.isFinite(plan?.familySize) ? plan.familySize : 1;
+  const leftover = (plan?.budget ?? 0) - (plan?.totalCost ?? 0);
+
+  const lines = [
+    'KAIN — plano sa palengke',
+    `Budget ${formatPeso(plan?.budget)} · ${familySize} ${familySize === 1 ? 'tao' : 'katao'}`,
+    '',
+    'MGA PUTAHE'
+  ];
+
+  for (const meal of meals) {
+    lines.push(`- ${meal.recipe?.name} x${meal.portions} — ${formatPeso(meal.cost)}`);
+  }
+
+  lines.push('', 'LISTAHAN SA PALENGKE');
+  for (const item of items) {
+    lines.push(`- ${item.name} ${formatQuantity(item.quantity, item.unit)} — ${formatPeso(item.cost)}`);
+  }
+
+  lines.push(
+    '',
+    `KABUUAN ${formatPeso(shoppingList?.totalCost)} · ${formatPeso(leftover)} natira sa budget`
+  );
+
+  return lines.join('\n');
+}
+
+function round1(value) {
+  return Number.isFinite(value) ? Math.round(value * 10) / 10 : 0;
+}
+
+function round2(value) {
+  return Number.isFinite(value) ? Math.round(value * 100) / 100 : 0;
 }

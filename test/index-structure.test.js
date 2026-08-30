@@ -92,7 +92,9 @@ test('form-error and app-error are focusable so moveFocus() can land on them', (
 });
 
 test('Tagalog UI copy is marked lang="tl" since the page is lang="en"', () => {
-  for (const phrase of ['Magkano ang budget?', 'Gawin ang plano', 'Mga putahe', 'Kabuuan', 'Kulang pa ang budget']) {
+  for (const phrase of ['Magkano ang budget?', 'Gawin ang plano', 'Mga putahe', 'Kabuuan',
+                        'Kulang pa ang budget', 'Nasa basket na', 'Ibahagi ang listahan',
+                        'Pero kaya nito ang']) {
     const idx = html.indexOf(phrase);
     assert.ok(idx !== -1, `expected to find "${phrase}" in index.html`);
     const tagStart = html.lastIndexOf('<', idx);
@@ -106,4 +108,47 @@ test('the results screen has a hidden capped-plan note wired to data-bind="cappe
   // "maxPortions caps the plan" case from the DEVNOTES UX-polish backlog.
   const note = html.match(/<p data-bind="cappedNote"[^>]*>/)[0];
   assert.match(note, /\bhidden\b/, 'cappedNote must start hidden; app.js reveals it');
+});
+
+test('every data-bind app.js writes to exists in the markup', () => {
+  // bind() returns null for a missing binding and the write throws at runtime,
+  // on the results screen, in front of whoever is being pitched to. Cheap to
+  // catch here instead.
+  const bound = new Set(
+    [...html.matchAll(/data-bind="([^"]+)"/g)].map((match) => match[1])
+  );
+  for (const name of [
+    'totalCost', 'budget', 'familySize', 'leftover', 'planSpan', 'cappedNote',
+    'meals', 'coverage', 'energyNote', 'chartBox',
+    'shopping', 'listTotal', 'priceVintage',
+    'marketItems', 'marketSpent', 'marketBar', 'shareStatus',
+    'emptyFamily', 'emptyBudget', 'minimumBudget',
+    'partialBox', 'partialMeal', 'partialDetail',
+    'submit'
+  ]) {
+    assert.ok(bound.has(name), `index.html has no [data-bind="${name}"] for app.js to write to`);
+  }
+});
+
+test('optional results copy starts hidden so it never shows an empty box', () => {
+  // Each of these is revealed only when app.js has something true to put in
+  // it. Shipping them visible would paint an empty note under every plan.
+  for (const name of ['cappedNote', 'energyNote', 'priceVintage', 'shareStatus', 'partialBox']) {
+    const element = html.match(new RegExp(`<[a-z]+ data-bind="${name}"[^>]*>`))[0];
+    assert.match(element, /\bhidden\b/, `${name} must start hidden`);
+  }
+});
+
+test('the empty screen still names a minimum budget alongside the partial suggestion', () => {
+  // REGRESSION GUARD, not a new feature: the partial suggestion leads, but the
+  // concrete "try at least ₱X" figure is the actionable one and must survive.
+  const partialAt = html.indexOf('data-bind="partialBox"');
+  const minimumAt = html.indexOf('data-bind="minimumBudget"');
+  assert.ok(partialAt !== -1 && minimumAt !== -1, 'both boxes must exist');
+  assert.ok(partialAt < minimumAt, 'what the budget DOES buy should lead');
+});
+
+test('the share control is a button, not a link that would need a network', () => {
+  const share = html.match(/<button[^>]*data-action="share"[^>]*>/)[0];
+  assert.match(share, /type="button"/, 'a submit-type button inside a form would re-solve');
 });

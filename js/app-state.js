@@ -6,7 +6,7 @@
  * budget" path) is testable without a browser or jsdom.
  */
 import { solve } from './solver.js';
-import { buildShoppingList } from './shopping-list.js';
+import { buildShoppingList, sumChecked, knownKeys } from './shopping-list.js';
 import { calculateCoverage } from './nutrition.js';
 
 /**
@@ -43,6 +43,37 @@ function minimumViableBudget(recipes, familySize) {
   return costs.length ? Math.ceil(Math.min(...costs)) : 0;
 }
 
+/**
+ * What the money actually buys when no plan feeds the whole family.
+ *
+ * The empty screen used to be a dead end — "try at least ₱30" to someone who
+ * has ₱20 and is not going to find another ₱10 — for exactly the user Kain
+ * exists for. A partial answer is still an answer: the cheapest dish, and how
+ * many servings that budget reaches, even when that is fewer servings than
+ * there are people.
+ *
+ * Not solver work: one pass for the cheapest cost-per-serving and a division.
+ * The solver's own answer for this budget is genuinely empty, and that stays
+ * true — this only describes the consolation prize beside it.
+ */
+function bestPartialMeal(recipes, budget) {
+  let cheapest = null;
+  for (const recipe of recipes ?? []) {
+    if (!(recipe?.costPerServing > 0)) continue;
+    if (!cheapest || recipe.costPerServing < cheapest.costPerServing) cheapest = recipe;
+  }
+  if (!cheapest) return null;
+
+  const servings = Math.floor(budget / cheapest.costPerServing);
+  if (servings < 1) return null;
+
+  return {
+    name: cheapest.name,
+    servings,
+    cost: Math.round(servings * cheapest.costPerServing * 100) / 100
+  };
+}
+
 export function createAppState() {
   const listeners = new Set();
 
@@ -56,6 +87,11 @@ export function createAppState() {
     coverage: null,
     minimumBudget: null,
     capped: false,
+    /** Market mode: shopping-list keys already in the basket, and their cost. */
+    checkedKeys: new Set(),
+    spent: 0,
+    /** Empty screen: the best partial thing this budget buys, or null. */
+    partial: null,
 
     subscribe(listener) {
       listeners.add(listener);
@@ -91,8 +127,16 @@ export function createAppState() {
       notify();
     },
 
-    /** Run the solver and route to results or the empty state. */
-    finish(recipes) {
+    /**
+     * Run the solver and route to results or the empty state.
+     *
+     * @param {Array} recipes
+     * @param {Array<string>} [restoredKeys]  Ticked shopping-list keys from a
+     *   previous visit. Filtered against the list this solve produced, so a
+     *   stale key from a plan that no longer exists is dropped rather than
+     *   silently inflating the running spend.
+     */
+    finish(recipes, restoredKeys = []) {
       const plan = solve({
         budget: state.budget,
         familySize: state.familySize,
@@ -104,7 +148,10 @@ export function createAppState() {
         state.shoppingList = null;
         state.coverage = null;
         state.minimumBudget = minimumViableBudget(recipes, state.familySize);
+        state.partial = bestPartialMeal(recipes, state.budget);
         state.capped = false;
+        state.checkedKeys = new Set();
+        state.spent = 0;
         state.screen = 'empty';
         return notify();
       }
@@ -113,6 +160,9 @@ export function createAppState() {
       state.shoppingList = buildShoppingList(plan);
       state.coverage = calculateCoverage(plan);
       state.minimumBudget = null;
+      state.partial = null;
+      state.checkedKeys = new Set(knownKeys(state.shoppingList.items, restoredKeys));
+      state.spent = sumChecked(state.shoppingList.items, state.checkedKeys);
       // True when every meal already sits at its recipe's maxPortions cap and
       // budget is left unspent — the case where a bigger budget would not have
       // changed this plan. See DEVNOTES.md "UX polish" backlog.
@@ -120,6 +170,26 @@ export function createAppState() {
         plan.totalCost < plan.budget &&
         plan.meals.every((meal) => meal.portions >= (meal.recipe.maxPortions ?? 1));
       state.screen = 'results';
+      notify();
+    },
+
+    /**
+     * Market mode: put a shopping-list line in the basket, or take it out.
+     *
+     * The running spend is recomputed from the list rather than accumulated,
+     * so it cannot drift out of step with which rows are actually ticked.
+     * Unknown keys are ignored — there is no such row to tick.
+     *
+     * @param {string} key  From itemKey() in shopping-list.js.
+     */
+    toggleChecked(key) {
+      const items = state.shoppingList?.items;
+      if (!items || knownKeys(items, [key]).length === 0) return;
+
+      if (state.checkedKeys.has(key)) state.checkedKeys.delete(key);
+      else state.checkedKeys.add(key);
+
+      state.spent = sumChecked(items, state.checkedKeys);
       notify();
     },
 
@@ -132,6 +202,11 @@ export function createAppState() {
       state.coverage = null;
       state.minimumBudget = null;
       state.capped = false;
+      // A new budget means a new list; carrying ticks over would credit the
+      // user for items the next plan may not even contain.
+      state.checkedKeys = new Set();
+      state.spent = 0;
+      state.partial = null;
       notify();
     }
   };

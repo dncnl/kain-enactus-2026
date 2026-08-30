@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createAppState, MAX_BUDGET, MAX_FAMILY_SIZE } from '../js/app-state.js';
+import { itemKey } from '../js/shopping-list.js';
 import { THREE_RECIPES } from './fixtures.js';
 
 test('starts on the input screen', () => {
@@ -151,4 +152,145 @@ test('notifies subscribers on every transition so the DOM can re-render', () => 
   state.submit({ budget: 300, familySize: 4 });
   state.finish(THREE_RECIPES);
   assert.deepEqual(seen, ['calculating', 'results']);
+});
+
+/* ── market mode (ROADMAP B1) ─────────────────────────────────────────── */
+
+/** A solved results state at the fixture's known 300 / 4 plan. */
+function resultsState(restored = []) {
+  const state = createAppState();
+  state.submit({ budget: 300, familySize: 4 });
+  state.finish(THREE_RECIPES, restored);
+  return state;
+}
+
+test('a fresh plan starts with an empty basket', () => {
+  const state = resultsState();
+  assert.equal(state.checkedKeys.size, 0);
+  assert.equal(state.spent, 0);
+});
+
+test('ticking a row adds exactly that row cost to the running spend', () => {
+  const state = resultsState();
+  const garlic = state.shoppingList.items.find((item) => item.name === 'Garlic');
+  state.toggleChecked(itemKey(garlic));
+  assert.equal(state.spent, garlic.cost);
+  assert.ok(state.checkedKeys.has('Garlic__g'));
+});
+
+test('un-ticking a row takes it back out again', () => {
+  const state = resultsState();
+  const key = itemKey(state.shoppingList.items[0]);
+  state.toggleChecked(key);
+  state.toggleChecked(key);
+  assert.equal(state.spent, 0);
+  assert.equal(state.checkedKeys.size, 0);
+});
+
+test('ticking every row reaches the shopping-list total exactly', () => {
+  // The figure printed as Kabuuan. Market mode finishing on a different number
+  // would contradict the screen it sits on.
+  const state = resultsState();
+  for (const item of state.shoppingList.items) state.toggleChecked(itemKey(item));
+  assert.equal(state.spent, state.shoppingList.totalCost);
+  assert.equal(state.spent, state.plan.totalCost);
+});
+
+test('a key that names no row is ignored rather than tracked', () => {
+  const state = resultsState();
+  state.toggleChecked('Unobtainium__g');
+  assert.equal(state.checkedKeys.size, 0);
+  assert.equal(state.spent, 0);
+});
+
+test('ticking notifies subscribers so the running total repaints', () => {
+  const state = resultsState();
+  let notifications = 0;
+  state.subscribe(() => notifications++);
+  state.toggleChecked(itemKey(state.shoppingList.items[0]));
+  assert.equal(notifications, 1);
+});
+
+test('an ignored key does not notify, so no repaint is triggered for nothing', () => {
+  const state = resultsState();
+  let notifications = 0;
+  state.subscribe(() => notifications++);
+  state.toggleChecked('Unobtainium__g');
+  assert.equal(notifications, 0);
+});
+
+test('restored ticks are re-validated against the plan actually solved', () => {
+  // Ticks persist across a closed tab, but the plan is re-solved rather than
+  // restored (prices move). A stored key for a row this plan does not contain
+  // must be dropped, not counted.
+  const state = resultsState(['Garlic__g', 'Unobtainium__g', 'Garlic__kg']);
+  assert.deepEqual([...state.checkedKeys], ['Garlic__g']);
+  const garlic = state.shoppingList.items.find((item) => item.name === 'Garlic');
+  assert.equal(state.spent, garlic.cost);
+});
+
+test('restoring nothing is the same as a fresh basket', () => {
+  for (const restored of [undefined, []]) {
+    const state = createAppState();
+    state.submit({ budget: 300, familySize: 4 });
+    state.finish(THREE_RECIPES, restored);
+    assert.equal(state.checkedKeys.size, 0);
+    assert.equal(state.spent, 0);
+  }
+});
+
+test('a new budget empties the basket rather than carrying ticks into a new list', () => {
+  const state = resultsState();
+  state.toggleChecked(itemKey(state.shoppingList.items[0]));
+  assert.ok(state.spent > 0);
+
+  state.reset();
+  assert.equal(state.checkedKeys.size, 0);
+  assert.equal(state.spent, 0);
+});
+
+/* ── empty state (ROADMAP B5) ─────────────────────────────────────────── */
+
+test('an empty plan still names what the budget does buy', () => {
+  // The dead end this replaces: "try at least ₱40" and nothing else, to
+  // someone holding ₱25 who is not going to find another ₱15.
+  const state = createAppState();
+  state.submit({ budget: 25, familySize: 4 });
+  state.finish(THREE_RECIPES);
+
+  assert.equal(state.screen, 'empty');
+  assert.equal(state.minimumBudget, 40, 'the existing advice must survive');
+  assert.ok(state.partial, 'expected a partial suggestion');
+  assert.equal(state.partial.name, 'Lugaw', 'the cheapest dish per serving');
+  assert.equal(state.partial.servings, 2); // 25 / 10 per serving, floored
+  assert.equal(state.partial.cost, 20);
+});
+
+test('the partial suggestion may feed fewer people than the family, and says so honestly', () => {
+  const state = createAppState();
+  state.submit({ budget: 25, familySize: 4 });
+  state.finish(THREE_RECIPES);
+  assert.ok(state.partial.servings < state.familySize);
+});
+
+test('a budget below even one serving offers nothing rather than zero servings', () => {
+  const state = createAppState();
+  state.submit({ budget: 5, familySize: 4 });
+  state.finish(THREE_RECIPES);
+  assert.equal(state.screen, 'empty');
+  assert.equal(state.partial, null);
+});
+
+test('a successful plan carries no partial suggestion', () => {
+  const state = resultsState();
+  assert.equal(state.partial, null);
+});
+
+test('reset clears the partial suggestion with the rest of the screen', () => {
+  const state = createAppState();
+  state.submit({ budget: 25, familySize: 4 });
+  state.finish(THREE_RECIPES);
+  assert.ok(state.partial);
+  state.reset();
+  assert.equal(state.partial, null);
 });

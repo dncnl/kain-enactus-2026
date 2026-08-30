@@ -19,11 +19,15 @@ jobs:
       - name: Run tests
         run: npm test
 
-      # Catches a hand-edited data/recipes.json that no longer matches
-      # data/prices.json. test/data-build.test.js asserts the same thing, but
-      # failing here names the fix directly.
+      # Catches a hand-edited data/recipes.json (or data/meta.json) that no
+      # longer matches data/prices.json. test/data-build.test.js asserts the
+      # same thing, but failing here names the fix directly.
+      #
+      # This only works because the generator is deterministic — see buildMeta()
+      # in scripts/build-data.mjs, which deliberately carries no build
+      # timestamp. Adding one here would make this step fail on every run.
       - name: Check generated data is in sync
         run: |
           npm run build:data
-          git diff --exit-code data/recipes.json \
-            || (echo "::error::data/recipes.json is stale — run 'npm run build:data' and commit the result" && exit 1)
+          git diff --exit-code data/recipes.json data/meta.json \
+            || (echo "::error::generated data is stale — run 'npm run build:data' and commit the result" && exit 1)

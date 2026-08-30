@@ -138,6 +138,10 @@
           of <span data-bind="budget">₱0</span> budget · feeds <span data-bind="familySize">0</span>
           · <span data-bind="leftover">₱0</span> left
         </p>
+        <!-- Servings restated as meals per person and days of food. Derived in
+             format.js from figures the plan already carries — no day dimension
+             exists in the data, and none is invented here. -->
+        <p class="text-xs opacity-80 mt-3 border-t border-white/25 pt-3" data-bind="planSpan"></p>
       </div>
 
       <!-- Shown only when every recipe in the plan is already at its maxPortions
@@ -164,22 +168,63 @@
           <div data-bind="chartBox" class="relative h-56">
             <canvas id="coverage-chart" aria-hidden="true"></canvas>
           </div>
-          <!-- The accessible representation of the chart: same numbers as text. -->
+          <!-- The accessible representation of the chart: same numbers as text.
+               app.js appends a plain-language verdict to each row — the figure
+               is precise, the word is what a non-expert reader can act on. -->
           <ul data-bind="coverage" class="mt-4 space-y-1 text-xs"></ul>
         </div>
+
+        <!-- The energy shortfall, said out loud. The solver weights protein and
+             iron above calories on purpose (see NUTRIENT_WEIGHTS), so realistic
+             budgets under-deliver energy; the decision was to surface that here
+             rather than change the solver. Text comes from energyGapNote(). -->
+        <p data-bind="energyNote" lang="tl" hidden
+           class="bubble bg-kain-yellow/40 mt-3 px-4 py-3 text-xs font-medium"></p>
       </section>
 
       <section>
         <h2 lang="tl" class="font-head text-xl font-extrabold mb-1">Listahan sa palengke</h2>
-        <p class="text-xs opacity-60 mb-3">Exact quantities — nothing extra to spoil at home.</p>
+        <p class="text-xs opacity-60 mb-1">Tick each item as you buy it — exact quantities, nothing extra to spoil at home.</p>
+        <!-- Price vintage. Hidden until data/meta.json resolves; a failed fetch
+             just leaves it hidden and never blocks a plan. See loadMeta(). -->
+        <p data-bind="priceVintage" lang="tl" hidden class="text-xs font-semibold opacity-70 mb-3"></p>
+
         <div class="bubble bg-white shadow-pop overflow-hidden">
           <ul data-bind="shopping" class="divide-y-2 divide-black/10"></ul>
+
+          <!-- Market mode. One hand on the phone at the stall: what is already
+               in the basket, and what is still owed. Measured against the list
+               total directly below it, never the budget — two denominators on
+               one screen is how the D-2/D-3 reconciliation bugs read to a user. -->
+          <div class="border-t-[3px] border-black bg-kain-cream px-4 py-3">
+            <div class="flex items-center justify-between text-xs font-bold">
+              <span lang="tl">Nasa basket na</span>
+              <span data-bind="marketItems" class="opacity-60">0/0 items</span>
+            </div>
+            <div class="mt-2 h-3 w-full overflow-hidden rounded-full border-2 border-black bg-white">
+              <div data-bind="marketBar" class="h-full bg-kain-green transition-[width] duration-300" style="width: 0%"></div>
+            </div>
+            <p data-bind="marketSpent" role="status"
+               class="mt-2 font-head text-sm font-extrabold">₱0 of ₱0</p>
+          </div>
+
           <div class="flex items-center justify-between bg-kain-yellow border-t-[3px] border-black px-4 py-3">
             <span lang="tl" class="font-head font-extrabold">Kabuuan</span>
             <span class="font-head font-extrabold text-lg" data-bind="listTotal">₱0</span>
           </div>
         </div>
       </section>
+
+      <!-- Plain text over the Web Share API, clipboard as the fallback. Mom
+           plans, a kid walks to the palengke; both paths work with no signal. -->
+      <div class="space-y-2">
+        <button type="button" data-action="share" lang="tl"
+                class="press w-full rounded-full border-[3px] border-black bg-kain-yellow py-4 font-head text-lg font-extrabold shadow-pop-lg">
+          Ibahagi ang listahan
+        </button>
+        <p data-bind="shareStatus" role="status" hidden
+           class="text-center text-xs font-medium opacity-70"></p>
+      </div>
 
       <button type="button" data-action="reset" lang="tl"
               class="press w-full rounded-full border-[3px] border-black bg-white py-4 font-head text-lg font-extrabold shadow-pop">
@@ -195,7 +240,16 @@
         No complete meal for <span data-bind="emptyFamily">0</span> fits
         <span data-bind="emptyBudget">₱0</span> yet.
       </p>
-      <div class="bubble bg-kain-yellow shadow-pop mx-auto mt-6 max-w-xs p-4">
+      <!-- Leads with what the money DOES buy. "Try at least ₱30" on its own is
+           a dead end for someone holding ₱20 — precisely the user Kain is for.
+           Hidden when the budget does not even reach one serving. -->
+      <div data-bind="partialBox" hidden class="bubble bg-white shadow-pop mx-auto mt-6 max-w-xs p-4 text-left">
+        <p lang="tl" class="text-xs font-bold uppercase tracking-wide opacity-70">Pero kaya nito ang</p>
+        <p lang="tl" class="font-head text-xl font-extrabold leading-tight mt-1" data-bind="partialMeal">—</p>
+        <p lang="tl" class="text-xs opacity-70 mt-1" data-bind="partialDetail"></p>
+      </div>
+
+      <div class="bubble bg-kain-yellow shadow-pop mx-auto mt-4 max-w-xs p-4">
         <p class="text-xs font-bold uppercase tracking-wide opacity-70">Try at least</p>
         <p class="font-head text-3xl font-extrabold" data-bind="minimumBudget">₱0</p>
       </div>

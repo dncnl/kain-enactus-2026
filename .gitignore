@@ -24,3 +24,5 @@ npm-debug.log*
 # Local working notes — not part of the submission
 AUDIT.md
 ROADMAP.md
+.gstack/
+.impeccable/
