@@ -7,8 +7,9 @@
  * everything at the stall, which is precisely where re-entering things is
  * hardest.
  *
- * WHAT IS PERSISTED, AND WHAT DELIBERATELY IS NOT. Only `{budget, familySize}`
- * and the ticked shopping-list keys. **Never the plan itself.** A stored plan
+ * WHAT IS PERSISTED, AND WHAT DELIBERATELY IS NOT. Only the three inputs
+ * (`budget`, `familySize`, `days`) and the ticked shopping-list keys.
+ * **Never the plan itself.** A stored plan
  * goes stale silently when prices change — it would keep showing last month's
  * total as if it were today's. Re-solving on load costs ~19ms and is always
  * correct, so the inputs are the only thing worth keeping.
@@ -74,16 +75,25 @@ export function createStorage(backend = defaultBackend()) {
         const familySize = Number(parsed?.familySize);
         if (!Number.isFinite(budget) || budget <= 0) return null;
         if (!Number.isFinite(familySize) || familySize < 1) return null;
-        return { budget, familySize };
+        // days arrived later than the other two, so an entry written by an
+        // older build has none. Fall back to a single day rather than
+        // discarding an otherwise good budget and family size.
+        const days = Number(parsed?.days);
+        return {
+          budget,
+          familySize,
+          days: Number.isFinite(days) && days >= 1 ? days : 1
+        };
       } catch {
         return null;
       }
     },
 
     /** @returns {boolean} whether it actually persisted. */
-    writeInputs({ budget, familySize } = {}) {
+    writeInputs({ budget, familySize, days = 1 } = {}) {
       if (!Number.isFinite(budget) || !Number.isFinite(familySize)) return false;
-      return writeRaw(INPUTS_KEY, JSON.stringify({ budget, familySize }));
+      const dayCount = Number.isFinite(days) && days >= 1 ? days : 1;
+      return writeRaw(INPUTS_KEY, JSON.stringify({ budget, familySize, days: dayCount }));
     },
 
     /**

@@ -11,7 +11,9 @@ import {
   formatPriceDate,
   priceVintageLine,
   marketProgress,
-  formatPlanAsText
+  formatPlanAsText,
+  describeDayPlan,
+  shoppingSpanNote
 } from '../js/format.js';
 
 /**
@@ -60,9 +62,18 @@ test('portions are described in batches and the servings they yield', () => {
 });
 
 test('with a family size, portions also say what each person gets', () => {
-  // "12 servings" is a figure you have to divide; "3 meals each" is not.
-  assert.equal(formatPortions(3, 12, 4), '3 batches · 12 servings · 3 meals each');
-  assert.equal(formatPortions(1, 4, 4), '1 batch · 4 servings · 1 meal each');
+  // "12 servings" is a figure you have to divide; "3 per person" is not.
+  assert.equal(formatPortions(3, 12, 4), '3 batches · 12 servings · 3 per person');
+  assert.equal(formatPortions(1, 4, 4), '1 batch · 4 servings · 1 per person');
+});
+
+test('a serving is never called a meal', () => {
+  // A serving is one portion of ONE dish. A day's plan stacks several dishes,
+  // so at ₱666/day for four people it is 40 servings — ten portions each, and
+  // about one day of energy. "Ten meals each" would be false by roughly the
+  // number of dishes in the plan.
+  assert.doesNotMatch(formatPortions(3, 12, 4), /meal/);
+  assert.doesNotMatch(describePlanSpan({ familySize: 4, meals: [{ servings: 40 }] }).text, /meal/);
 });
 
 test('a missing family size leaves the two-argument output untouched', () => {
@@ -156,17 +167,17 @@ test('the note never suggests a nonsensical zero cups of rice', () => {
 
 /* ── plan span (ROADMAP A2, presentation only) ────────────────────────── */
 
-test('a plan is restated as meals per person', () => {
+test('a plan is restated as servings per person', () => {
   const span = describePlanSpan({ familySize: 4, meals: [{ servings: 12 }] });
   assert.equal(span.servings, 12);
-  assert.equal(span.mealsEach, 3);
-  assert.equal(span.text, '12 servings · about 3 meals for each of 4 people');
+  assert.equal(span.servingsEach, 3);
+  assert.equal(span.text, '12 servings · about 3 per person across 4 people');
 });
 
 test('servings are summed across every dish in the plan', () => {
   const span = describePlanSpan({ familySize: 4, meals: [{ servings: 12 }, { servings: 4 }] });
   assert.equal(span.servings, 16);
-  assert.equal(span.mealsEach, 4);
+  assert.equal(span.servingsEach, 4);
 });
 
 test('the span never claims a number of days', () => {
@@ -176,26 +187,22 @@ test('the span never claims a number of days', () => {
   // Coverage is the honest measure of how far a plan goes, and it is already on
   // the same screen.
   const span = describePlanSpan({ familySize: 4, meals: [{ servings: 20 }] });
-  assert.equal(span.text, '20 servings · about 5 meals for each of 4 people');
+  assert.equal(span.text, '20 servings · about 5 per person across 4 people');
   assert.doesNotMatch(span.text, /\bdays?\b/, 'the plan data carries no day dimension to claim');
   assert.equal(span.days, undefined);
 });
 
-test('a single person and a single meal are described in the singular', () => {
+test('a single person is described in the singular', () => {
   assert.equal(
     describePlanSpan({ familySize: 1, meals: [{ servings: 3 }] }).text,
-    '3 servings · about 3 meals for each of 1 person'
-  );
-  assert.equal(
-    describePlanSpan({ familySize: 4, meals: [{ servings: 4 }] }).text,
-    '4 servings · about 1 meal for each of 4 people'
+    '3 servings · about 3 per person across 1 person'
   );
 });
 
 test('a malformed plan degrades to zero rather than dividing by zero', () => {
   const span = describePlanSpan(null);
   assert.equal(span.servings, 0);
-  assert.equal(span.mealsEach, 0);
+  assert.equal(span.servingsEach, 0);
 });
 
 /* ── price vintage (ROADMAP B4) ───────────────────────────────────────── */
@@ -296,4 +303,61 @@ test('the shared text stays plain text, so it survives SMS and a screenshot', ()
 
 test('sharing an absent plan produces text rather than throwing', () => {
   assert.doesNotThrow(() => formatPlanAsText(null, null));
+});
+
+/* ── the day dimension (ROADMAP A2) ───────────────────────────────────── */
+
+test('a single-day plan is not dressed up in day language', () => {
+  const day = describeDayPlan({ days: 1, dailySpend: 290.4, budget: 300, totalCost: 290.4, familySize: 4 });
+  assert.equal(day.isMultiDay, false);
+  assert.equal(day.cookText, 'Cook this today.');
+});
+
+test('a multi-day plan states money, people and time in one sentence', () => {
+  const day = describeDayPlan({ days: 3, dailySpend: 652.76, budget: 2000, totalCost: 1958.28, familySize: 4 });
+  assert.equal(day.isMultiDay, true);
+  assert.equal(day.spanText, '₱1,958.28 feeds 4 people for 3 days');
+  assert.equal(day.cookText, 'Cook this same set of dishes each day for 3 days.');
+});
+
+test('the per-day figure is what a day COSTS, so the dish cards add up to it', () => {
+  // The dish cards print per-day prices. Quoting the daily BUDGET here (₱666)
+  // would show a number the dishes beneath it do not sum to — the D-2/D-3
+  // reconciliation confusion again. Spend x days must equal the plan total.
+  const day = describeDayPlan({ days: 3, dailySpend: 652.76, budget: 2000, totalCost: 1958.28, familySize: 4 });
+  assert.equal(day.perDayText, '₱652.76 a day');
+  assert.equal(Math.round(652.76 * 3 * 100) / 100, 1958.28);
+});
+
+test('one person is described in the singular across the span', () => {
+  const day = describeDayPlan({ days: 2, dailySpend: 95, budget: 200, totalCost: 190, familySize: 1 });
+  assert.match(day.spanText, /feeds 1 person for 2 days/);
+});
+
+test('a malformed span degrades to a single day rather than dividing by zero', () => {
+  for (const bad of [undefined, null, 0, -3, NaN]) {
+    assert.equal(describeDayPlan({ days: bad, familySize: 4 }).days, 1);
+  }
+  assert.equal(describeDayPlan().days, 1);
+});
+
+test('the shopping list announces its span only when there is one to announce', () => {
+  assert.equal(shoppingSpanNote(1), null, 'one day needs no note');
+  assert.match(shoppingSpanNote(3), /buong 3 araw/);
+  assert.match(shoppingSpanNote(3), /isang punta lang/, 'it is one trip, not three');
+});
+
+test('shared text names the span and labels the dishes as daily', () => {
+  const text = formatPlanAsText(SHARE_PLAN, SHARE_LIST, { days: 3, budget: 2000, totalCost: 871.2 });
+  assert.match(text, /· 3 araw/);
+  assert.match(text, /MGA PUTAHE \(araw-araw\)/);
+  assert.match(text, /LISTAHAN SA PALENGKE \(buong 3 araw\)/);
+  assert.match(text, /₱1,128\.80 natira sa budget/); // 2000 - 871.20
+});
+
+test('shared text for a single day is unchanged from before the day dimension', () => {
+  const text = formatPlanAsText(SHARE_PLAN, SHARE_LIST);
+  assert.match(text, /Budget ₱300 · 4 katao\n/, 'no day suffix at one day');
+  assert.match(text, /\nMGA PUTAHE\n/);
+  assert.match(text, /\nLISTAHAN SA PALENGKE\n/);
 });

@@ -13,7 +13,7 @@
  *
  * Bump CACHE_NAME on every deploy — that is what evicts stale files.
  */
-const CACHE_NAME = 'kain-v6';
+const CACHE_NAME = 'kain-v7';
 
 /** Local app shell. Install fails if any of these fail. */
 const PRECACHE_URLS = [

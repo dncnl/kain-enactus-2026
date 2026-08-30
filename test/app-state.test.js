@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createAppState, MAX_BUDGET, MAX_FAMILY_SIZE } from '../js/app-state.js';
+import { createAppState, MAX_BUDGET, MAX_FAMILY_SIZE, MAX_DAYS } from '../js/app-state.js';
 import { itemKey } from '../js/shopping-list.js';
 import { THREE_RECIPES } from './fixtures.js';
 
@@ -293,4 +293,151 @@ test('reset clears the partial suggestion with the rest of the screen', () => {
   assert.ok(state.partial);
   state.reset();
   assert.equal(state.partial, null);
+});
+
+/* ── the day dimension (ROADMAP A2) ───────────────────────────────────── */
+
+test('a plan with no days given behaves exactly as it always has', () => {
+  // Every figure in DEVNOTES is a one-day figure. `days` defaults to 1 so those
+  // remain reachable and this feature cannot silently move them.
+  const a = createAppState();
+  a.submit({ budget: 300, familySize: 4 });
+  a.finish(THREE_RECIPES);
+
+  const b = createAppState();
+  b.submit({ budget: 300, familySize: 4, days: 1 });
+  b.finish(THREE_RECIPES);
+
+  assert.equal(a.days, 1);
+  assert.equal(a.plan.totalCost, b.plan.totalCost);
+  assert.equal(a.shoppingList.totalCost, b.shoppingList.totalCost);
+  assert.equal(a.totalCost, a.plan.totalCost);
+});
+
+test('the solver is asked for ONE day at budget/days, never the whole budget', () => {
+  // The ₱2000 bug: solving a week's money in one pass describes a single
+  // impossible day of eating. 300/3 must solve the same day as a plain 100.
+  const spread = createAppState();
+  spread.submit({ budget: 300, familySize: 4, days: 3 });
+  spread.finish(THREE_RECIPES);
+
+  const oneDay = createAppState();
+  oneDay.submit({ budget: 100, familySize: 4 });
+  oneDay.finish(THREE_RECIPES);
+
+  assert.equal(spread.dailyBudget, 100);
+  assert.equal(spread.plan.totalCost, oneDay.plan.totalCost);
+  assert.deepEqual(
+    spread.plan.meals.map((m) => `${m.recipe.name} x${m.portions}`),
+    oneDay.plan.meals.map((m) => `${m.recipe.name} x${m.portions}`)
+  );
+});
+
+test('coverage stays per-day, so the percentages mean the same at any span', () => {
+  // The whole reason for solving one day at a time: DAILY_TARGETS_PER_PERSON is
+  // a daily figure. If coverage moved with `days` it would silently compare a
+  // week of food against one day of need.
+  const spread = createAppState();
+  spread.submit({ budget: 300, familySize: 4, days: 3 });
+  spread.finish(THREE_RECIPES);
+
+  const oneDay = createAppState();
+  oneDay.submit({ budget: 100, familySize: 4 });
+  oneDay.finish(THREE_RECIPES);
+
+  for (const key of ['calories', 'protein', 'iron', 'vitaminA']) {
+    assert.equal(spread.coverage[key].percent, oneDay.coverage[key].percent, key);
+  }
+});
+
+test('the total charged is one day repeated, and the list matches it exactly', () => {
+  // The invariant the whole project protects: the figure on the plan card and
+  // the shopping-list Kabuuan must be identical. Multiplying by days is a new
+  // way for them to drift apart, so it is asserted at every span.
+  for (const days of [1, 2, 3, 5, 7, 14]) {
+    const state = createAppState();
+    state.submit({ budget: 300 * days, familySize: 4, days });
+    state.finish(THREE_RECIPES);
+    if (state.screen !== 'results') continue;
+
+    assert.equal(
+      state.totalCost,
+      Math.round(state.plan.totalCost * days * 100) / 100,
+      `${days} days: total is not one day repeated`
+    );
+    assert.equal(
+      state.shoppingList.totalCost,
+      state.totalCost,
+      `${days} days: Kabuuan ${state.shoppingList.totalCost} != plan total ${state.totalCost}`
+    );
+  }
+});
+
+test('shopping quantities scale with days — one trip, not one per day', () => {
+  const oneDay = createAppState();
+  oneDay.submit({ budget: 300, familySize: 4, days: 1 });
+  oneDay.finish(THREE_RECIPES);
+
+  const threeDay = createAppState();
+  threeDay.submit({ budget: 900, familySize: 4, days: 3 });
+  threeDay.finish(THREE_RECIPES);
+
+  const garlic1 = oneDay.shoppingList.items.find((i) => i.name === 'Garlic');
+  const garlic3 = threeDay.shoppingList.items.find((i) => i.name === 'Garlic');
+  assert.equal(garlic3.quantity, garlic1.quantity * 3);
+});
+
+test('rejects a day count below one or past the freshness ceiling', () => {
+  for (const days of [0, -1]) {
+    const state = createAppState();
+    state.submit({ budget: 300, familySize: 4, days });
+    assert.equal(state.screen, 'input');
+    assert.match(state.error, /day/i);
+  }
+  const tooLong = createAppState();
+  tooLong.submit({ budget: 3000, familySize: 4, days: MAX_DAYS + 1 });
+  assert.equal(tooLong.screen, 'input');
+  assert.match(tooLong.error, /days/i);
+});
+
+test('accepts a day count exactly at the ceiling', () => {
+  const state = createAppState();
+  state.submit({ budget: 3000, familySize: 4, days: MAX_DAYS });
+  assert.equal(state.screen, 'calculating');
+  assert.equal(state.error, null);
+});
+
+test('a budget too thin to stretch says so instead of reporting an empty plan', () => {
+  // ₱10 over 14 days is ₱0 a day. Solving that returns an empty plan, which the
+  // UI would report as "nothing fits your budget" — true but useless. The
+  // actionable answer is that the span, not the budget, is the problem.
+  const state = createAppState();
+  state.submit({ budget: 10, familySize: 4, days: 14 });
+  assert.equal(state.screen, 'input');
+  assert.match(state.error, /fewer days/i);
+});
+
+test('the minimum-budget advice covers the whole span, not one day of it', () => {
+  // Telling a 3-day shopper they need ₱40 would send them back to a plan that
+  // still does not solve.
+  const oneDay = createAppState();
+  oneDay.submit({ budget: 25, familySize: 4, days: 1 });
+  oneDay.finish(THREE_RECIPES);
+
+  const threeDay = createAppState();
+  threeDay.submit({ budget: 75, familySize: 4, days: 3 });
+  threeDay.finish(THREE_RECIPES);
+
+  assert.equal(oneDay.minimumBudget, 40);
+  assert.equal(threeDay.screen, 'empty');
+  assert.equal(threeDay.minimumBudget, 120);
+});
+
+test('reset clears the span back to a single day', () => {
+  const state = createAppState();
+  state.submit({ budget: 900, familySize: 4, days: 3 });
+  state.finish(THREE_RECIPES);
+  state.reset();
+  assert.equal(state.totalCost, null);
+  assert.equal(state.dailyBudget, null);
 });

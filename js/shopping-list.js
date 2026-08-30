@@ -49,15 +49,19 @@ export function knownKeys(items, checkedKeys) {
  * @param {object} plan  Output of solve().
  * @returns {{items: Array, totalCost: number}}
  */
-export function buildShoppingList(plan) {
+export function buildShoppingList(plan, days = 1) {
   const meals = plan?.meals ?? [];
   const merged = new Map();
+  // A plan is one day's cooking. The palengke trip is not: you buy for the
+  // whole stretch at once, so every quantity and cost here is multiplied by
+  // the number of days the budget has to cover.
+  const dayCount = Number.isFinite(days) && days >= 1 ? Math.floor(days) : 1;
 
   for (const meal of meals) {
     const { recipe, servings } = meal;
     // Ingredient quantities are stated for recipe.servings; scale to what the
-    // plan actually cooks.
-    const scale = servings / recipe.servings;
+    // plan actually cooks, then again for how many days it is cooked.
+    const scale = (servings / recipe.servings) * dayCount;
 
     for (const ingredient of recipe.ingredients ?? []) {
       // Same name AND unit merge; differing units stay separate lines so we
@@ -95,7 +99,9 @@ export function buildShoppingList(plan) {
   // costs carry decimals. Settle the difference on the largest line, the one
   // where a centavo is least visible, so the two figures agree by construction.
   const lineSum = round2(items.reduce((sum, item) => sum + item.cost, 0));
-  const planTotal = Number.isFinite(plan?.totalCost) ? plan.totalCost : lineSum;
+  // The figure the results screen prints beside this one is the whole trip:
+  // one day's plan repeated for every day it covers.
+  const planTotal = Number.isFinite(plan?.totalCost) ? round2(plan.totalCost * dayCount) : lineSum;
   const residual = round2(planTotal - lineSum);
   if (residual !== 0 && items.length > 0) {
     items[0].cost = round2(items[0].cost + residual);

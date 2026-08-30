@@ -38,8 +38,33 @@ const hostileBackend = {
 
 test('inputs survive a round trip', () => {
   const store = createStorage(fakeBackend());
-  assert.equal(store.writeInputs({ budget: 300, familySize: 4 }), true);
-  assert.deepEqual(store.readInputs(), { budget: 300, familySize: 4 });
+  assert.equal(store.writeInputs({ budget: 300, familySize: 4, days: 3 }), true);
+  assert.deepEqual(store.readInputs(), { budget: 300, familySize: 4, days: 3 });
+});
+
+test('a missing day count defaults to one rather than discarding the entry', () => {
+  // Entries written by a build that predates the day dimension have no `days`.
+  // Throwing them away would make the app forget a perfectly good budget and
+  // family size the first time a user upgrades.
+  const store = createStorage(fakeBackend({
+    'kain:inputs:v1': JSON.stringify({ budget: 300, familySize: 4 })
+  }));
+  assert.deepEqual(store.readInputs(), { budget: 300, familySize: 4, days: 1 });
+});
+
+test('writing without a day count records one day', () => {
+  const store = createStorage(fakeBackend());
+  store.writeInputs({ budget: 300, familySize: 4 });
+  assert.equal(store.readInputs().days, 1);
+});
+
+test('a nonsense day count falls back to one instead of reaching the solver', () => {
+  for (const days of [0, -3, 'three', null]) {
+    const store = createStorage(fakeBackend({
+      'kain:inputs:v1': JSON.stringify({ budget: 300, familySize: 4, days })
+    }));
+    assert.equal(store.readInputs().days, 1, `expected ${days} to fall back to 1`);
+  }
 });
 
 test('nothing stored yet reads as null, not as a zero budget', () => {
@@ -94,13 +119,13 @@ test('clearing ticked keys leaves the saved inputs alone', () => {
   // "Bagong budget" discards the basket, not the family size the user just
   // typed — they are about to plan for the same household again.
   const store = createStorage(fakeBackend());
-  store.writeInputs({ budget: 300, familySize: 4 });
+  store.writeInputs({ budget: 300, familySize: 4, days: 3 });
   store.writeCheckedKeys(['Monggo__g']);
 
   store.clearCheckedKeys();
 
   assert.deepEqual(store.readCheckedKeys(), []);
-  assert.deepEqual(store.readInputs(), { budget: 300, familySize: 4 });
+  assert.deepEqual(store.readInputs(), { budget: 300, familySize: 4, days: 3 });
 });
 
 test('a storage backend that throws on every call never throws at the caller', () => {

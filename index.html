@@ -100,6 +100,25 @@
           </div>
         </div>
 
+        <!-- The day dimension. Families shop weekly; the nutrition targets and
+             maxPortions are both DAILY, so the solver is asked for one day at
+             budget/days and that day is repeated. See app-state.js finish(). -->
+        <div>
+          <label for="days" class="block font-head font-bold text-sm mb-2">
+            <span lang="tl">Ilang araw?</span>
+            <span class="font-body font-normal opacity-60">— how long must this budget last</span>
+          </label>
+          <div class="bubble bg-white shadow-pop flex items-center justify-between p-2">
+            <button type="button" data-step-days="-1" aria-label="Fewer days"
+                    class="press h-12 w-12 shrink-0 rounded-full border-[3px] border-black bg-kain-cream font-head text-2xl font-extrabold leading-none">−</button>
+            <input id="days" name="days" type="number" inputmode="numeric" min="1" max="14" step="1" value="1"
+                   class="w-full bg-transparent text-center text-2xl font-head font-extrabold outline-none" />
+            <button type="button" data-step-days="1" aria-label="More days"
+                    class="press h-12 w-12 shrink-0 rounded-full border-[3px] border-black bg-kain-cream font-head text-2xl font-extrabold leading-none">+</button>
+          </div>
+          <p class="mt-2 text-xs opacity-60" data-bind="perDayHint"></p>
+        </div>
+
         <!-- Validation messages. Owned by render(), rewritten on every state
              change — never write app-level failures here, they get clobbered. -->
         <p id="form-error" role="alert" tabindex="-1" hidden
@@ -138,10 +157,13 @@
           of <span data-bind="budget">₱0</span> budget · feeds <span data-bind="familySize">0</span>
           · <span data-bind="leftover">₱0</span> left
         </p>
-        <!-- Servings restated as meals per person and days of food. Derived in
-             format.js from figures the plan already carries — no day dimension
-             exists in the data, and none is invented here. -->
-        <p class="text-xs opacity-80 mt-3 border-t border-white/25 pt-3" data-bind="planSpan"></p>
+        <!-- Money -> people -> time. The one sentence that turns a meal planner
+             into a rationing tool. Hidden at a single day, where it says
+             nothing the line above has not already said. -->
+        <p class="font-head text-sm font-extrabold mt-3 border-t border-white/25 pt-3"
+           data-bind="daySpan" hidden></p>
+        <!-- Servings restated as meals per person, for one day of the plan. -->
+        <p class="text-xs opacity-80 mt-2" data-bind="planSpan"></p>
       </div>
 
       <!-- Shown only when every recipe in the plan is already at its maxPortions
@@ -153,7 +175,10 @@
       </p>
 
       <section>
-        <h2 lang="tl" class="font-head text-xl font-extrabold mb-3">Mga putahe</h2>
+        <h2 lang="tl" class="font-head text-xl font-extrabold mb-1">Mga putahe</h2>
+        <!-- At more than one day these are the dishes for EACH day, not the
+             whole stretch — the solver is asked for one day at budget/days. -->
+        <p class="text-xs opacity-60 mb-3" data-bind="mealsNote" hidden></p>
         <ul data-bind="meals" class="space-y-3"></ul>
       </section>
 
@@ -185,6 +210,9 @@
       <section>
         <h2 lang="tl" class="font-head text-xl font-extrabold mb-1">Listahan sa palengke</h2>
         <p class="text-xs opacity-60 mb-1">Tick each item as you buy it — exact quantities, nothing extra to spoil at home.</p>
+        <!-- One trip covers every day in the plan; quantities are already
+             multiplied. Hidden at a single day. -->
+        <p data-bind="shoppingSpan" lang="tl" hidden class="text-xs font-bold opacity-75 mb-1"></p>
         <!-- Price vintage. Hidden until data/meta.json resolves; a failed fetch
              just leaves it hidden and never blocks a plan. See loadMeta(). -->
         <p data-bind="priceVintage" lang="tl" hidden class="text-xs font-semibold opacity-70 mb-3"></p>

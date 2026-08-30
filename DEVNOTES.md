@@ -26,13 +26,14 @@ Enactus Philippines 2026, Early-Stage Project Track, Angeles University Foundati
 | Screen state machine | Built, tested |
 | UI shell (4 screens) | Built |
 | Market mode + persistence | Built, tested — see "After the results screen" below |
+| Multi-day budgets | Built, tested — see "The day dimension" below |
 | Offline / PWA | Built and deployed — offline retest on the live URL is still outstanding, see below |
 | Recipe + price data | **43/46 ingredients** now real, dated prices from DA Bantay Presyo, PSA OpenSTAT, DTI SRP, and named retailers. 3 ingredients (dried fish, sitsaro, togue) are confirmed absent from every PH government price series checked (DA, PSA, BFAR) and stay mock — flagged in `data/prices.json`. See "Backend handoff notes" below. |
 | Nutrition targets | Real: PDRI 2015 RNI (male 19-29y), per FDA Circular 2023-009's "general population" reference — see `js/nutrition-targets.js` |
 | PWA icons | Real 192×192 / 512×512, `any` + `maskable`, generated from the logo via `scripts/generate-icons.py` |
 | Deployment | **Live: https://kain-enactus.vercel.app** — HTTPS, service worker headers verified from this machine. A human still needs to do the real-device airplane-mode test, see "Deploy checklist". |
 
-Tests: **136 passing** (`npm test`).
+Tests: **159 passing** (`npm test`).
 
 ---
 
@@ -81,6 +82,63 @@ Also check, on the same 300 / 4 run:
 | Close the tab, reopen | Budget and family size still filled, **still on the input screen**; re-submit and the ticks come back |
 | *Bagong budget* | Ticks cleared, budget and family size kept |
 | 20 / 4 | Empty screen leads with *2 servings ng Lugaw*, then *Try at least ₱30* |
+
+---
+
+## The day dimension
+
+Families shop weekly; the app used to only plan a day. Entering ₱2,000 for four
+people produced **ten dishes in a single day** at 275% energy and 817% vitamin
+A — not a solver bug, but a week's money being scored against one day's need.
+
+**The fix is a division, not a solver change.** `finish()` always asks the
+solver for ONE day, at `budget / days`, and repeats that day:
+
+```
+₱2000 / 4 people / 3 days
+   -> solve({ budget: 666, familySize: 4 })     one day
+   -> plan.totalCost 652.76, 4 dishes
+   -> state.totalCost = 652.76 x 3 = 1958.28    the whole trip
+   -> buildShoppingList(plan, 3)                 quantities x3, one trip
+```
+
+This is what the data supports and nothing else is touched:
+
+| Thing | Stays | Why |
+|---|---|---|
+| `DAILY_TARGETS_PER_PERSON` | daily | so coverage means the same at any span |
+| `calculateCoverage()` | per-day | measured against the one-day plan |
+| `maxPortions` | batches **per day** | already its documented meaning |
+| recipe object shape | unchanged | no contract change, no sign-off needed |
+| `solver.js` | unchanged | it is handed a smaller budget, nothing more |
+
+**`days` defaults to 1 everywhere** — `submit()`, `buildShoppingList()`,
+`storage.readInputs()` — so every figure in the smoke test above is still the
+default path and cannot drift.
+
+### Two things that must reconcile
+
+The dish cards show **per-day** costs; the header and `Kabuuan` show the whole
+trip. They have to tie out, or the screen contradicts itself the way bugs D-2
+and D-3 did:
+
+```
+₱231 + ₱197.04 + ₱195.48 + ₱29.24 = ₱652.76 a day
+₱652.76 x 3 = ₱1,958.28 = header = Kabuuan
+```
+
+`describeDayPlan()` therefore quotes the daily **spend** (₱652.76), never the
+daily **budget** (₱666) — the dishes add up to the former, not the latter.
+
+### Why 14 days
+
+Past a fortnight the assumptions break: fresh produce bought on day one will not
+survive, and the prices behind the plan are dated to a single week's bulletin.
+`MAX_DAYS` in `app-state.js`, mirrored by `max="14"` in the markup.
+
+A budget too thin to divide (₱10 over 14 days is ₱0 a day) is rejected on the
+input screen naming the span as the problem, rather than solving to an empty
+plan and reporting "nothing fits your budget" — true, but useless.
 
 ---
 
@@ -282,7 +340,7 @@ Everything else is generated or is frontend code. You should not need to touch
 
 `sw.js` serves cached responses before the network. **New data will not reach
 anyone who has already opened the app until `CACHE_NAME` is bumped** (`sw.js`,
-currently `kain-v6`). Bump it in the same commit as any data change. This is the
+currently `kain-v7`). Bump it in the same commit as any data change. This is the
 single easiest thing here to get wrong, because it works perfectly on your
 machine and fails only for returning users.
 

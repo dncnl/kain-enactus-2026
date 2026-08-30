@@ -44,8 +44,65 @@ export function formatPortions(portions, servings, familySize) {
   const batch = portions === 1 ? 'batch' : 'batches';
   const base = `${portions} ${batch} · ${servings} servings`;
   if (!Number.isFinite(familySize) || familySize < 1) return base;
+  // "per person", never "meals". A serving is one portion of ONE dish, and a
+  // day's plan stacks several dishes: at ₱666/day for four people the plan is
+  // 40 servings, which is ten portions each and about one day of energy — not
+  // ten meals. Calling a serving a meal overstates it by roughly the number of
+  // dishes in the plan.
   const each = round1(servings / familySize);
-  return `${base} · ${each} ${each === 1 ? 'meal' : 'meals'} each`;
+  return `${base} · ${each} per person`;
+}
+
+/* ── the day dimension (ROADMAP A2) ───────────────────────────────────── */
+
+/**
+ * How the plan is framed once a budget covers more than one day.
+ *
+ * The solver is always asked for ONE day, at budget/days. That is not a
+ * workaround, it is what the data supports: DAILY_TARGETS_PER_PERSON is a
+ * daily figure and maxPortions caps batches per day, so a single solve of a
+ * week's money describes one impossible day of eating — the ten-dish plan at
+ * ₱2,000. Solving one day and repeating it keeps every number meaning what it
+ * says, and needs no change to the solver or the recipe contract.
+ *
+ * @returns {{days:number, isMultiDay:boolean, perDayText:string, spanText:string, cookText:string}}
+ */
+export function describeDayPlan({ days, dailySpend, budget, totalCost, familySize } = {}) {
+  const dayCount = Number.isFinite(days) && days >= 1 ? Math.floor(days) : 1;
+  const people = Number.isFinite(familySize) && familySize >= 1 ? Math.floor(familySize) : 1;
+  const dayWord = dayCount === 1 ? 'day' : 'days';
+
+  return {
+    days: dayCount,
+    isMultiDay: dayCount > 1,
+    /**
+     * What one day actually COSTS, not what it was allowed to cost. The dish
+     * cards below print per-day prices, so quoting the daily budget here would
+     * put a figure on screen that the dishes beneath it do not add up to —
+     * the same reconciliation confusion as bugs D-2 and D-3. Spend x days is
+     * the plan total exactly.
+     */
+    perDayText: `${formatPeso(dailySpend ?? totalCost ?? budget)} a day`,
+    /** The headline framing: money -> people -> time. */
+    spanText:
+      `${formatPeso(totalCost)} feeds ${people} ${people === 1 ? 'person' : 'people'} ` +
+      `for ${dayCount} ${dayWord}`,
+    /** What to actually do with it. */
+    cookText:
+      dayCount === 1
+        ? 'Cook this today.'
+        : `Cook this same set of dishes each day for ${dayCount} ${dayWord}.`
+  };
+}
+
+/**
+ * The shopping list covers every day at once — one trip, not one per day.
+ * Null at a single day, where saying so would be noise.
+ */
+export function shoppingSpanNote(days) {
+  const dayCount = Number.isFinite(days) && days >= 1 ? Math.floor(days) : 1;
+  if (dayCount === 1) return null;
+  return `Para sa buong ${dayCount} araw — isang punta lang sa palengke.`;
 }
 
 /* ── plain language (ROADMAP B2) ──────────────────────────────────────── */
@@ -133,15 +190,15 @@ export function describePlanSpan(plan) {
     (total, meal) => total + (Number.isFinite(meal?.servings) ? meal.servings : 0),
     0
   );
-  const mealsEach = round1(servings / familySize);
+  const servingsEach = round1(servings / familySize);
   const people = familySize === 1 ? 'person' : 'people';
 
   return {
     servings,
-    mealsEach,
+    servingsEach,
     text:
-      `${servings} servings · about ${mealsEach} ${mealsEach === 1 ? 'meal' : 'meals'} ` +
-      `for each of ${familySize} ${people}`
+      `${servings} servings · about ${servingsEach} per person ` +
+      `across ${familySize} ${people}`
   };
 }
 
@@ -212,24 +269,28 @@ export function marketProgress(spent, total, checkedCount, itemCount) {
  * doing the planning and the person walking to the palengke are often not the
  * same person.
  */
-export function formatPlanAsText(plan, shoppingList) {
+export function formatPlanAsText(plan, shoppingList, { days = 1, budget, totalCost } = {}) {
   const meals = plan?.meals ?? [];
   const items = shoppingList?.items ?? [];
   const familySize = Number.isFinite(plan?.familySize) ? plan.familySize : 1;
-  const leftover = (plan?.budget ?? 0) - (plan?.totalCost ?? 0);
+  const dayCount = Number.isFinite(days) && days >= 1 ? Math.floor(days) : 1;
+  const wholeBudget = Number.isFinite(budget) ? budget : (plan?.budget ?? 0);
+  const spend = Number.isFinite(totalCost) ? totalCost : (plan?.totalCost ?? 0);
+  const leftover = wholeBudget - spend;
 
   const lines = [
     'KAIN — plano sa palengke',
-    `Budget ${formatPeso(plan?.budget)} · ${familySize} ${familySize === 1 ? 'tao' : 'katao'}`,
+    `Budget ${formatPeso(wholeBudget)} · ${familySize} ${familySize === 1 ? 'tao' : 'katao'}` +
+      (dayCount > 1 ? ` · ${dayCount} araw` : ''),
     '',
-    'MGA PUTAHE'
+    dayCount > 1 ? 'MGA PUTAHE (araw-araw)' : 'MGA PUTAHE'
   ];
 
   for (const meal of meals) {
     lines.push(`- ${meal.recipe?.name} x${meal.portions} — ${formatPeso(meal.cost)}`);
   }
 
-  lines.push('', 'LISTAHAN SA PALENGKE');
+  lines.push('', dayCount > 1 ? `LISTAHAN SA PALENGKE (buong ${dayCount} araw)` : 'LISTAHAN SA PALENGKE');
   for (const item of items) {
     lines.push(`- ${item.name} ${formatQuantity(item.quantity, item.unit)} — ${formatPeso(item.cost)}`);
   }

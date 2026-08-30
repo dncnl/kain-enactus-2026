@@ -39,6 +39,16 @@ test('the budget input declares an upper bound', () => {
   assert.match(input, /\bmin="1"/, 'budget input should keep its min');
 });
 
+test('the days input declares bounds matching MAX_DAYS', () => {
+  // Fresh produce bought on day one will not survive to day fourteen, and the
+  // prices behind the plan are dated to a single week's bulletin. app-state.js
+  // enforces it; this checks the markup agrees.
+  const input = html.match(/<input id="days"[\s\S]*?\/>/)[0];
+  assert.match(input, /max="14"/, 'days input needs max="14" to match MAX_DAYS');
+  assert.match(input, /min="1"/, 'a plan covers at least one day');
+  assert.match(input, /value="1"/, 'default to one day so the original behaviour is the default');
+});
+
 test('the family size input declares an upper bound', () => {
   // REGRESSION: no max clamp meant a slipped extra digit (450 instead of 4)
   // silently multiplied every recipe's cost 100x. See app-state.test.js's
@@ -94,7 +104,7 @@ test('form-error and app-error are focusable so moveFocus() can land on them', (
 test('Tagalog UI copy is marked lang="tl" since the page is lang="en"', () => {
   for (const phrase of ['Magkano ang budget?', 'Gawin ang plano', 'Mga putahe', 'Kabuuan',
                         'Kulang pa ang budget', 'Nasa basket na', 'Ibahagi ang listahan',
-                        'Pero kaya nito ang']) {
+                        'Pero kaya nito ang', 'Ilang araw?']) {
     const idx = html.indexOf(phrase);
     assert.ok(idx !== -1, `expected to find "${phrase}" in index.html`);
     const tagStart = html.lastIndexOf('<', idx);
@@ -119,6 +129,7 @@ test('every data-bind app.js writes to exists in the markup', () => {
   );
   for (const name of [
     'totalCost', 'budget', 'familySize', 'leftover', 'planSpan', 'cappedNote',
+    'daySpan', 'perDayHint', 'mealsNote', 'shoppingSpan',
     'meals', 'coverage', 'energyNote', 'chartBox',
     'shopping', 'listTotal', 'priceVintage',
     'marketItems', 'marketSpent', 'marketBar', 'shareStatus',
@@ -133,9 +144,12 @@ test('every data-bind app.js writes to exists in the markup', () => {
 test('optional results copy starts hidden so it never shows an empty box', () => {
   // Each of these is revealed only when app.js has something true to put in
   // it. Shipping them visible would paint an empty note under every plan.
-  for (const name of ['cappedNote', 'energyNote', 'priceVintage', 'shareStatus', 'partialBox']) {
-    const element = html.match(new RegExp(`<[a-z]+ data-bind="${name}"[^>]*>`))[0];
-    assert.match(element, /\bhidden\b/, `${name} must start hidden`);
+  for (const name of ['cappedNote', 'energyNote', 'priceVintage', 'shareStatus', 'partialBox',
+                      'daySpan', 'mealsNote', 'shoppingSpan']) {
+    // data-bind is not always the first attribute, so match the whole opening
+    // tag around it rather than assuming attribute order.
+    const element = html.match(new RegExp(`<[a-z]+[^>]*\\sdata-bind="${name}"[^>]*>`))[0];
+    assert.match(element, /\shidden[\s>]/, `${name} must start hidden`);
   }
 });
 
