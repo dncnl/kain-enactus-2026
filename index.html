@@ -60,19 +60,22 @@
   <header class="shrink-0 bg-kain-yellow border-b-[3px] border-black">
     <div class="mx-auto w-full max-w-lg h-20 px-5 flex items-center justify-between gap-3">
       <img src="assets/kain-logo.png" alt="Kain" class="h-12 w-auto shrink-0" />
-      <div class="flex items-center gap-3 min-w-0">
-        <!-- Language toggle. fil is the default (see js/i18n.js): primary
-             users are Filipino families, and the app's tone was already built
-             around Tagalog for that reason. app.js wires data-lang clicks. -->
-        <div class="bubble bg-white flex shrink-0 overflow-hidden text-xs" role="group" data-i18n-aria="langToggleLabel" aria-label="Wika">
-          <button type="button" data-lang="fil" aria-pressed="true"
-                  class="press px-3 py-1.5 font-head font-extrabold">Fil</button>
-          <button type="button" data-lang="en" aria-pressed="false"
-                  class="press px-3 py-1.5 font-head font-extrabold border-l-[3px] border-black">En</button>
-        </div>
-        <p class="font-head font-bold text-[11px] leading-tight text-right uppercase tracking-wide opacity-80 min-w-0">
-          <span data-i18n="tagline1">Budget</span><br /><span data-i18n="tagline2">sa Pagkain</span>
-        </p>
+      <!-- tagline sits between logo and toggle as its own flex item (not
+           nested with the toggle) so justify-between anchors the toggle to
+           the right edge regardless of how long the tagline text is in the
+           active locale — otherwise the toggle shifts position on
+           language switch. -->
+      <p class="font-head font-bold text-[11px] leading-tight text-right uppercase tracking-wide opacity-80 min-w-0">
+        <span data-i18n="tagline1">Budget</span><br /><span data-i18n="tagline2">sa Pagkain</span>
+      </p>
+      <!-- Language toggle. fil is the default (see js/i18n.js): primary
+           users are Filipino families, and the app's tone was already built
+           around Tagalog for that reason. app.js wires data-lang clicks. -->
+      <div class="bubble bg-white flex shrink-0 overflow-hidden text-xs" role="group" data-i18n-aria="langToggleLabel" aria-label="Wika">
+        <button type="button" data-lang="fil" aria-pressed="true"
+                class="press px-3 py-1.5 font-head font-extrabold"><span aria-hidden="true">🇵🇭</span> Fil</button>
+        <button type="button" data-lang="en" aria-pressed="false"
+                class="press px-3 py-1.5 font-head font-extrabold border-l-[3px] border-black"><span aria-hidden="true">🇺🇸</span> En</button>
       </div>
     </div>
   </header>
