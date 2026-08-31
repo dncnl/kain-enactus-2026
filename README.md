@@ -78,8 +78,11 @@ Scale claims.
 
 ## Status
 
-Prototype stage. Recipe and price data (18 recipes) is currently mock data, not
-yet sourced from FNRI/DA. Not yet deployed.
+Prototype stage, deployed at [kain-enactus.vercel.app](https://kain-enactus.vercel.app).
+Recipe and price data (18 recipes, 46 ingredients) is 43/46 real DA/PSA/DTI-
+sourced prices; 3 ingredients no PH government bulletin publicly tracks stay
+mock and are flagged as such in `data/prices.json`. Nutrition targets are
+sourced from the Philippine Dietary Reference Intakes (FNRI PDRI 2015).
 
 For the fixed-bug log, the data pipeline mechanics, and notes for whoever picks
 up backend/data work next, see [DEVNOTES.md](DEVNOTES.md).

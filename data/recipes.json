@@ -3,7 +3,7 @@
     "id": "lugaw",
     "name": "Lugaw",
     "servings": 4,
-    "costPerServing": 15.33,
+    "costPerServing": 7.31,
     "maxPortions": 3,
     "nutritionPerServing": {
       "calories": 280,
@@ -16,31 +16,31 @@
         "name": "Rice",
         "quantity": 300,
         "unit": "g",
-        "cost": 29.99
+        "cost": 14.53
       },
       {
         "name": "Ginger",
         "quantity": 20,
         "unit": "g",
-        "cost": 5.33
+        "cost": 3.7
       },
       {
         "name": "Garlic",
         "quantity": 20,
         "unit": "g",
-        "cost": 8
+        "cost": 3
       },
       {
         "name": "Onion",
         "quantity": 50,
         "unit": "g",
-        "cost": 8
+        "cost": 5.57
       },
       {
         "name": "Fish sauce",
         "quantity": 30,
         "unit": "ml",
-        "cost": 10
+        "cost": 2.44
       }
     ]
   },
@@ -48,7 +48,7 @@
     "id": "ginisang-monggo",
     "name": "Ginisang Monggo",
     "servings": 4,
-    "costPerServing": 22.38,
+    "costPerServing": 16.42,
     "maxPortions": 3,
     "nutritionPerServing": {
       "calories": 320,
@@ -61,37 +61,37 @@
         "name": "Monggo",
         "quantity": 250,
         "unit": "g",
-        "cost": 35.02
+        "cost": 37.04
       },
       {
         "name": "Malunggay",
         "quantity": 100,
         "unit": "g",
-        "cost": 12.5
+        "cost": 6.58
       },
       {
         "name": "Garlic",
         "quantity": 15,
         "unit": "g",
-        "cost": 6
+        "cost": 2.25
       },
       {
         "name": "Onion",
         "quantity": 60,
         "unit": "g",
-        "cost": 9.6
+        "cost": 6.68
       },
       {
         "name": "Tomato",
         "quantity": 80,
         "unit": "g",
-        "cost": 12
+        "cost": 9.02
       },
       {
         "name": "Cooking oil",
         "quantity": 30,
         "unit": "ml",
-        "cost": 14.4
+        "cost": 4.11
       }
     ]
   },
@@ -99,7 +99,7 @@
     "id": "adobong-manok",
     "name": "Adobong Manok",
     "servings": 4,
-    "costPerServing": 50,
+    "costPerServing": 41.57,
     "maxPortions": 2,
     "nutritionPerServing": {
       "calories": 420,
@@ -112,37 +112,37 @@
         "name": "Chicken",
         "quantity": 700,
         "unit": "g",
-        "cost": 150
+        "cost": 141.4
       },
       {
         "name": "Soy sauce",
         "quantity": 60,
         "unit": "ml",
-        "cost": 15
+        "cost": 3.64
       },
       {
         "name": "Vinegar",
         "quantity": 60,
         "unit": "ml",
-        "cost": 12
+        "cost": 3.3
       },
       {
         "name": "Garlic",
         "quantity": 25,
         "unit": "g",
-        "cost": 10
+        "cost": 3.75
       },
       {
         "name": "Bay leaf",
         "quantity": 2,
         "unit": "g",
-        "cost": 5
+        "cost": 1.83
       },
       {
         "name": "Peppercorn",
         "quantity": 5,
         "unit": "g",
-        "cost": 8
+        "cost": 12.36
       }
     ]
   },
@@ -150,7 +150,7 @@
     "id": "tinolang-manok",
     "name": "Tinolang Manok",
     "servings": 4,
-    "costPerServing": 45.55,
+    "costPerServing": 38.61,
     "maxPortions": 2,
     "nutritionPerServing": {
       "calories": 350,
@@ -163,37 +163,37 @@
         "name": "Chicken",
         "quantity": 600,
         "unit": "g",
-        "cost": 128.6
+        "cost": 121.19
       },
       {
         "name": "Ginger",
         "quantity": 30,
         "unit": "g",
-        "cost": 8
+        "cost": 5.55
       },
       {
         "name": "Sayote",
         "quantity": 200,
         "unit": "g",
-        "cost": 16
+        "cost": 13.32
       },
       {
         "name": "Malunggay",
         "quantity": 80,
         "unit": "g",
-        "cost": 10
+        "cost": 5.26
       },
       {
         "name": "Onion",
         "quantity": 60,
         "unit": "g",
-        "cost": 9.6
+        "cost": 6.68
       },
       {
         "name": "Fish sauce",
         "quantity": 30,
         "unit": "ml",
-        "cost": 10
+        "cost": 2.44
       }
     ]
   },
@@ -201,7 +201,7 @@
     "id": "pinakbet",
     "name": "Pinakbet",
     "servings": 4,
-    "costPerServing": 29.15,
+    "costPerServing": 26.35,
     "maxPortions": 3,
     "nutritionPerServing": {
       "calories": 210,
@@ -214,49 +214,49 @@
         "name": "Kalabasa",
         "quantity": 250,
         "unit": "g",
-        "cost": 20
+        "cost": 16.9
       },
       {
         "name": "Talong",
         "quantity": 150,
         "unit": "g",
-        "cost": 15
+        "cost": 26.83
       },
       {
         "name": "Sitaw",
         "quantity": 150,
         "unit": "g",
-        "cost": 18
+        "cost": 25.2
       },
       {
         "name": "Okra",
         "quantity": 100,
         "unit": "g",
-        "cost": 12
+        "cost": 9.96
       },
       {
         "name": "Bagoong",
         "quantity": 40,
         "unit": "g",
-        "cost": 18
+        "cost": 7.38
       },
       {
         "name": "Tomato",
         "quantity": 80,
         "unit": "g",
-        "cost": 12
+        "cost": 9.02
       },
       {
         "name": "Onion",
         "quantity": 60,
         "unit": "g",
-        "cost": 9.6
+        "cost": 6.68
       },
       {
         "name": "Cooking oil",
         "quantity": 25,
         "unit": "ml",
-        "cost": 12
+        "cost": 3.43
       }
     ]
   },
@@ -264,7 +264,7 @@
     "id": "ginisang-togue",
     "name": "Ginisang Togue",
     "servings": 4,
-    "costPerServing": 18,
+    "costPerServing": 12.75,
     "maxPortions": 3,
     "nutritionPerServing": {
       "calories": 180,
@@ -277,37 +277,37 @@
         "name": "Togue",
         "quantity": 300,
         "unit": "g",
-        "cost": 20
+        "cost": 20.02
       },
       {
         "name": "Carrot",
         "quantity": 80,
         "unit": "g",
-        "cost": 12
+        "cost": 9.14
       },
       {
         "name": "Garlic",
         "quantity": 15,
         "unit": "g",
-        "cost": 6
+        "cost": 2.25
       },
       {
         "name": "Onion",
         "quantity": 50,
         "unit": "g",
-        "cost": 8
+        "cost": 5.57
       },
       {
         "name": "Tokwa",
         "quantity": 100,
         "unit": "g",
-        "cost": 14
+        "cost": 10.59
       },
       {
         "name": "Cooking oil",
         "quantity": 25,
         "unit": "ml",
-        "cost": 12
+        "cost": 3.43
       }
     ]
   },
@@ -315,7 +315,7 @@
     "id": "sinigang-na-isda",
     "name": "Sinigang na Isda",
     "servings": 4,
-    "costPerServing": 42.15,
+    "costPerServing": 47.92,
     "maxPortions": 2,
     "nutritionPerServing": {
       "calories": 260,
@@ -328,37 +328,37 @@
         "name": "Bangus",
         "quantity": 500,
         "unit": "g",
-        "cost": 110
+        "cost": 121
       },
       {
         "name": "Kangkong",
         "quantity": 150,
         "unit": "g",
-        "cost": 12
+        "cost": 12.02
       },
       {
         "name": "Labanos",
         "quantity": 120,
         "unit": "g",
-        "cost": 10
+        "cost": 13.43
       },
       {
         "name": "Tomato",
         "quantity": 100,
         "unit": "g",
-        "cost": 15
+        "cost": 11.28
       },
       {
         "name": "Sinigang mix",
         "quantity": 40,
         "unit": "g",
-        "cost": 12
+        "cost": 27.27
       },
       {
         "name": "Onion",
         "quantity": 60,
         "unit": "g",
-        "cost": 9.6
+        "cost": 6.68
       }
     ]
   },
@@ -366,7 +366,7 @@
     "id": "tortang-talong",
     "name": "Tortang Talong",
     "servings": 4,
-    "costPerServing": 28.18,
+    "costPerServing": 32.78,
     "maxPortions": 3,
     "nutritionPerServing": {
       "calories": 290,
@@ -379,37 +379,37 @@
         "name": "Talong",
         "quantity": 400,
         "unit": "g",
-        "cost": 39.99
+        "cost": 71.5
       },
       {
         "name": "Eggs",
         "quantity": 4,
         "unit": "pc",
-        "cost": 40
+        "cost": 32.08
       },
       {
         "name": "Onion",
         "quantity": 50,
         "unit": "g",
-        "cost": 8
+        "cost": 5.57
       },
       {
         "name": "Cooking oil",
         "quantity": 30,
         "unit": "ml",
-        "cost": 14.4
+        "cost": 4.11
       },
       {
         "name": "Salt",
         "quantity": 5,
         "unit": "g",
-        "cost": 2
+        "cost": 0.2
       },
       {
         "name": "Ground pork",
         "quantity": 50,
         "unit": "g",
-        "cost": 8.33
+        "cost": 17.66
       }
     ]
   },
@@ -417,7 +417,7 @@
     "id": "ginataang-gulay",
     "name": "Ginataang Gulay",
     "servings": 4,
-    "costPerServing": 30.98,
+    "costPerServing": 27.47,
     "maxPortions": 3,
     "nutritionPerServing": {
       "calories": 340,
@@ -430,55 +430,55 @@
         "name": "Coconut milk",
         "quantity": 200,
         "unit": "ml",
-        "cost": 29.99
+        "cost": 31.5
       },
       {
         "name": "Kalabasa",
         "quantity": 250,
         "unit": "g",
-        "cost": 20
+        "cost": 16.9
       },
       {
         "name": "Sitaw",
         "quantity": 150,
         "unit": "g",
-        "cost": 18
+        "cost": 25.2
       },
       {
         "name": "Malunggay",
         "quantity": 80,
         "unit": "g",
-        "cost": 10
+        "cost": 5.26
       },
       {
         "name": "Ginger",
         "quantity": 20,
         "unit": "g",
-        "cost": 5.33
+        "cost": 3.7
       },
       {
         "name": "Shrimp paste",
         "quantity": 30,
         "unit": "g",
-        "cost": 14
+        "cost": 15.72
       },
       {
         "name": "Onion",
         "quantity": 60,
         "unit": "g",
-        "cost": 9.6
+        "cost": 6.68
       },
       {
         "name": "Cooking oil",
         "quantity": 25,
         "unit": "ml",
-        "cost": 12
+        "cost": 3.43
       },
       {
         "name": "Chili",
         "quantity": 10,
         "unit": "g",
-        "cost": 5
+        "cost": 1.49
       }
     ]
   },
@@ -486,7 +486,7 @@
     "id": "nilagang-baboy",
     "name": "Nilagang Baboy",
     "servings": 4,
-    "costPerServing": 57.9,
+    "costPerServing": 69.02,
     "maxPortions": 2,
     "nutritionPerServing": {
       "calories": 450,
@@ -499,31 +499,31 @@
         "name": "Pork",
         "quantity": 600,
         "unit": "g",
-        "cost": 180
+        "cost": 211.92
       },
       {
         "name": "Potato",
         "quantity": 200,
         "unit": "g",
-        "cost": 18
+        "cost": 29.24
       },
       {
         "name": "Repolyo",
         "quantity": 200,
         "unit": "g",
-        "cost": 14
+        "cost": 19.28
       },
       {
         "name": "Saging saba",
         "quantity": 2,
         "unit": "pc",
-        "cost": 10
+        "cost": 8.96
       },
       {
         "name": "Onion",
         "quantity": 60,
         "unit": "g",
-        "cost": 9.6
+        "cost": 6.68
       }
     ]
   },
@@ -531,7 +531,7 @@
     "id": "pritong-galunggong",
     "name": "Pritong Galunggong",
     "servings": 4,
-    "costPerServing": 34.2,
+    "costPerServing": 42.3,
     "maxPortions": 3,
     "nutritionPerServing": {
       "calories": 310,
@@ -544,25 +544,25 @@
         "name": "Galunggong",
         "quantity": 500,
         "unit": "g",
-        "cost": 100
+        "cost": 159.09
       },
       {
         "name": "Cooking oil",
         "quantity": 60,
         "unit": "ml",
-        "cost": 28.8
+        "cost": 8.22
       },
       {
         "name": "Salt",
         "quantity": 10,
         "unit": "g",
-        "cost": 4
+        "cost": 0.39
       },
       {
         "name": "Garlic",
         "quantity": 10,
         "unit": "g",
-        "cost": 4
+        "cost": 1.5
       }
     ]
   },
@@ -570,7 +570,7 @@
     "id": "ginisang-repolyo",
     "name": "Ginisang Repolyo",
     "servings": 4,
-    "costPerServing": 19,
+    "costPerServing": 20.04,
     "maxPortions": 3,
     "nutritionPerServing": {
       "calories": 170,
@@ -583,37 +583,37 @@
         "name": "Repolyo",
         "quantity": 400,
         "unit": "g",
-        "cost": 28
+        "cost": 38.58
       },
       {
         "name": "Carrot",
         "quantity": 80,
         "unit": "g",
-        "cost": 12
+        "cost": 9.14
       },
       {
         "name": "Garlic",
         "quantity": 15,
         "unit": "g",
-        "cost": 6
+        "cost": 2.25
       },
       {
         "name": "Onion",
         "quantity": 50,
         "unit": "g",
-        "cost": 8
+        "cost": 5.57
       },
       {
         "name": "Ground pork",
         "quantity": 60,
         "unit": "g",
-        "cost": 10
+        "cost": 21.19
       },
       {
         "name": "Cooking oil",
         "quantity": 25,
         "unit": "ml",
-        "cost": 12
+        "cost": 3.43
       }
     ]
   },
@@ -621,7 +621,7 @@
     "id": "munggo-malunggay",
     "name": "Munggo with Malunggay",
     "servings": 4,
-    "costPerServing": 21.69,
+    "costPerServing": 16.29,
     "maxPortions": 3,
     "nutritionPerServing": {
       "calories": 300,
@@ -634,25 +634,25 @@
         "name": "Monggo",
         "quantity": 250,
         "unit": "g",
-        "cost": 35.01
+        "cost": 37.04
       },
       {
         "name": "Malunggay",
         "quantity": 150,
         "unit": "g",
-        "cost": 18.75
+        "cost": 9.87
       },
       {
         "name": "Garlic",
         "quantity": 15,
         "unit": "g",
-        "cost": 6
+        "cost": 2.25
       },
       {
         "name": "Onion",
         "quantity": 50,
         "unit": "g",
-        "cost": 8
+        "cost": 5.57
       },
       {
         "name": "Dried fish",
@@ -664,7 +664,7 @@
         "name": "Cooking oil",
         "quantity": 25,
         "unit": "ml",
-        "cost": 12
+        "cost": 3.43
       }
     ]
   },
@@ -672,7 +672,7 @@
     "id": "sardinas-kangkong",
     "name": "Sardinas with Kangkong",
     "servings": 4,
-    "costPerServing": 22.95,
+    "costPerServing": 19.25,
     "maxPortions": 3,
     "nutritionPerServing": {
       "calories": 280,
@@ -685,37 +685,37 @@
         "name": "Sardines",
         "quantity": 2,
         "unit": "can",
-        "cost": 44
+        "cost": 41.01
       },
       {
         "name": "Kangkong",
         "quantity": 250,
         "unit": "g",
-        "cost": 20
+        "cost": 20.03
       },
       {
         "name": "Garlic",
         "quantity": 15,
         "unit": "g",
-        "cost": 6
+        "cost": 2.25
       },
       {
         "name": "Onion",
         "quantity": 50,
         "unit": "g",
-        "cost": 8
+        "cost": 5.57
       },
       {
         "name": "Tomato",
         "quantity": 60,
         "unit": "g",
-        "cost": 9
+        "cost": 6.77
       },
       {
         "name": "Cooking oil",
         "quantity": 10,
         "unit": "ml",
-        "cost": 4.8
+        "cost": 1.37
       }
     ]
   },
@@ -723,7 +723,7 @@
     "id": "chopsuey",
     "name": "Chopsuey",
     "servings": 4,
-    "costPerServing": 34.38,
+    "costPerServing": 33.98,
     "maxPortions": 2,
     "nutritionPerServing": {
       "calories": 230,
@@ -736,13 +736,13 @@
         "name": "Repolyo",
         "quantity": 150,
         "unit": "g",
-        "cost": 10.5
+        "cost": 14.46
       },
       {
         "name": "Carrot",
         "quantity": 120,
         "unit": "g",
-        "cost": 18
+        "cost": 13.7
       },
       {
         "name": "Sitsaro",
@@ -754,43 +754,43 @@
         "name": "Baguio beans",
         "quantity": 100,
         "unit": "g",
-        "cost": 16
+        "cost": 19.59
       },
       {
         "name": "Cauliflower",
         "quantity": 120,
         "unit": "g",
-        "cost": 22.02
+        "cost": 31.74
       },
       {
         "name": "Chicken liver",
         "quantity": 100,
         "unit": "g",
-        "cost": 20
+        "cost": 23.72
       },
       {
         "name": "Garlic",
         "quantity": 15,
         "unit": "g",
-        "cost": 6
+        "cost": 2.25
       },
       {
         "name": "Onion",
         "quantity": 50,
         "unit": "g",
-        "cost": 8
+        "cost": 5.57
       },
       {
         "name": "Cooking oil",
         "quantity": 25,
         "unit": "ml",
-        "cost": 12
+        "cost": 3.43
       },
       {
         "name": "Cornstarch",
         "quantity": 15,
         "unit": "g",
-        "cost": 5
+        "cost": 1.46
       }
     ]
   },
@@ -798,7 +798,7 @@
     "id": "arroz-caldo",
     "name": "Arroz Caldo",
     "servings": 4,
-    "costPerServing": 31.24,
+    "costPerServing": 22.72,
     "maxPortions": 3,
     "nutritionPerServing": {
       "calories": 380,
@@ -811,37 +811,37 @@
         "name": "Rice",
         "quantity": 300,
         "unit": "g",
-        "cost": 30
+        "cost": 14.52
       },
       {
         "name": "Chicken",
         "quantity": 300,
         "unit": "g",
-        "cost": 64.29
+        "cost": 60.61
       },
       {
         "name": "Ginger",
         "quantity": 30,
         "unit": "g",
-        "cost": 8
+        "cost": 5.55
       },
       {
         "name": "Garlic",
         "quantity": 20,
         "unit": "g",
-        "cost": 8
+        "cost": 3
       },
       {
         "name": "Onion",
         "quantity": 50,
         "unit": "g",
-        "cost": 8
+        "cost": 5.57
       },
       {
         "name": "Fish sauce",
         "quantity": 20,
         "unit": "ml",
-        "cost": 6.67
+        "cost": 1.63
       }
     ]
   },
@@ -849,7 +849,7 @@
     "id": "paksiw-na-bangus",
     "name": "Paksiw na Bangus",
     "servings": 4,
-    "costPerServing": 39.42,
+    "costPerServing": 37.89,
     "maxPortions": 2,
     "nutritionPerServing": {
       "calories": 330,
@@ -862,37 +862,37 @@
         "name": "Bangus",
         "quantity": 500,
         "unit": "g",
-        "cost": 110.01
+        "cost": 120.99
       },
       {
         "name": "Vinegar",
         "quantity": 80,
         "unit": "ml",
-        "cost": 16
+        "cost": 4.4
       },
       {
         "name": "Ginger",
         "quantity": 25,
         "unit": "g",
-        "cost": 6.67
+        "cost": 4.63
       },
       {
         "name": "Garlic",
         "quantity": 20,
         "unit": "g",
-        "cost": 8
+        "cost": 3
       },
       {
         "name": "Ampalaya",
         "quantity": 100,
         "unit": "g",
-        "cost": 12
+        "cost": 17.05
       },
       {
         "name": "Chili",
         "quantity": 10,
         "unit": "g",
-        "cost": 5
+        "cost": 1.49
       }
     ]
   },
@@ -900,7 +900,7 @@
     "id": "ginisang-sayote",
     "name": "Ginisang Sayote with Egg",
     "servings": 4,
-    "costPerServing": 21.15,
+    "costPerServing": 15,
     "maxPortions": 3,
     "nutritionPerServing": {
       "calories": 220,
@@ -913,37 +913,37 @@
         "name": "Sayote",
         "quantity": 400,
         "unit": "g",
-        "cost": 32
+        "cost": 26.63
       },
       {
         "name": "Eggs",
         "quantity": 2,
         "unit": "pc",
-        "cost": 20
+        "cost": 16.04
       },
       {
         "name": "Garlic",
         "quantity": 15,
         "unit": "g",
-        "cost": 6
+        "cost": 2.25
       },
       {
         "name": "Onion",
         "quantity": 50,
         "unit": "g",
-        "cost": 8
+        "cost": 5.57
       },
       {
         "name": "Tomato",
         "quantity": 60,
         "unit": "g",
-        "cost": 9
+        "cost": 6.77
       },
       {
         "name": "Cooking oil",
         "quantity": 20,
         "unit": "ml",
-        "cost": 9.6
+        "cost": 2.74
       }
     ]
   }

@@ -150,9 +150,51 @@ export function serialize(recipes) {
   return JSON.stringify(recipes, null, 2) + '\n';
 }
 
+/**
+ * Provenance summary for the UI: how current the prices are, and how much of
+ * the dataset is actually sourced.
+ *
+ * WHY A SEPARATE FILE. `data/prices.json` is build-time only — it never
+ * reaches the browser — and `data/recipes.json` is a bare top-level array the
+ * solver reads directly, so wrapping it in an envelope would break the pinned
+ * data contract. A second small file carries the metadata without touching
+ * either.
+ *
+ * NO BUILD TIMESTAMP, deliberately. Everything here is derived from the source
+ * data, so re-running the generator on unchanged sources produces identical
+ * bytes. A `Date.now()` field would make `data/meta.json` differ on every run
+ * and turn the CI staleness check into a permanent red.
+ *
+ * Entries with a null `pricedOn` are the ingredients still carrying mock
+ * prices (see DEVNOTES): counted in `total`, excluded from `sourced` and from
+ * the date range, so the line the app shows never claims a date it does not
+ * have.
+ */
+export function buildMeta({ prices }) {
+  const dated = prices
+    .map((entry) => entry.pricedOn)
+    .filter((date) => typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date))
+    .sort();
+
+  return {
+    prices: {
+      total: prices.length,
+      sourced: dated.length,
+      earliest: dated[0] ?? null,
+      latest: dated[dated.length - 1] ?? null
+    }
+  };
+}
+
+/** Exact bytes written to data/meta.json — shared with the sync test. */
+export function serializeMeta(meta) {
+  return JSON.stringify(meta, null, 2) + '\n';
+}
+
 // Run only when invoked directly, so the test can import the functions above.
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  const { recipes, errors } = buildRecipes(loadSources());
+  const sources = loadSources();
+  const { recipes, errors } = buildRecipes(sources);
 
   if (errors.length > 0) {
     console.error(`\n✖ ${errors.length} problem(s) — data/recipes.json was NOT written:\n`);
@@ -164,5 +206,13 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   writeFileSync(join(ROOT, 'data/recipes.json'), serialize(recipes));
   const total = recipes.reduce((n, r) => n + r.ingredients.length, 0);
   console.log(`✔ wrote data/recipes.json — ${recipes.length} recipes, ${total} ingredient rows`);
+
+  const meta = buildMeta(sources);
+  writeFileSync(join(ROOT, 'data/meta.json'), serializeMeta(meta));
+  console.log(
+    `✔ wrote data/meta.json — ${meta.prices.sourced}/${meta.prices.total} ingredients sourced, ` +
+      `priced ${meta.prices.earliest} to ${meta.prices.latest}`
+  );
+
   console.log('  Remember to bump CACHE_NAME in sw.js so cached clients pick this up.');
 }

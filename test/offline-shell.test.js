@@ -91,6 +91,30 @@ test('recipe data is precached — an offline plan cannot be solved without it',
   assert.ok(cached.includes('data/recipes.json'), 'data/recipes.json must be precached');
 });
 
+test('price metadata is precached so provenance survives going offline', () => {
+  // Not required to solve a plan — app.js fetches it non-blockingly and hides
+  // the line on failure — but "real, dated market prices" is the project's
+  // central claim, and it should not quietly disappear the moment signal does.
+  const cached = precachedPaths().map((u) => u.replace(/^\.\//, ''));
+  assert.ok(cached.includes('data/meta.json'), 'data/meta.json must be precached');
+  assert.ok(existsSync(join(ROOT, 'data/meta.json')), 'data/meta.json must exist — run `npm run build:data`');
+});
+
+test('every data file app.js fetches at runtime is precached', () => {
+  // Generalises the two tests above: the module-graph test catches a new JS
+  // module, but a new fetch('data/...') would otherwise reach a phone with no
+  // signal and fail there instead of here.
+  const cached = new Set(precachedPaths().map((u) => u.replace(/^\.\//, '')));
+  const fetched = [...stripComments(read('js/app.js')).matchAll(/fetch\(\s*['"]([^'"]+)['"]/g)]
+    .map((match) => match[1])
+    .filter((url) => !/^(https?:)?\/\//.test(url));
+
+  assert.ok(fetched.length > 0, 'expected app.js to fetch at least the recipe data');
+  for (const url of fetched) {
+    assert.ok(cached.has(url.replace(/^\.\//, '')), `app.js fetches "${url}" but sw.js never precaches it`);
+  }
+});
+
 test('the service worker versions its cache so a redeploy evicts stale files', () => {
   const source = read('sw.js');
   assert.match(source, /const CACHE_NAME\s*=\s*['"][^'"]*v\d+/i, 'CACHE_NAME must carry a version');
