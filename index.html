@@ -58,11 +58,22 @@
   <!-- Persistent brand anchor. Fixed height on every screen so it never shifts
        as the user moves input -> calculating -> results. -->
   <header class="shrink-0 bg-kain-yellow border-b-[3px] border-black">
-    <div class="mx-auto w-full max-w-lg h-20 px-5 flex items-center justify-between">
-      <img src="assets/kain-logo.png" alt="Kain" class="h-12 w-auto" />
-      <p class="font-head font-bold text-[11px] leading-tight text-right uppercase tracking-wide opacity-80">
-        Budget<br />to Meal Plan
-      </p>
+    <div class="mx-auto w-full max-w-lg h-20 px-5 flex items-center justify-between gap-3">
+      <img src="assets/kain-logo.png" alt="Kain" class="h-12 w-auto shrink-0" />
+      <div class="flex items-center gap-3 min-w-0">
+        <!-- Language toggle. fil is the default (see js/i18n.js): primary
+             users are Filipino families, and the app's tone was already built
+             around Tagalog for that reason. app.js wires data-lang clicks. -->
+        <div class="bubble bg-white flex shrink-0 overflow-hidden text-xs" role="group" data-i18n-aria="langToggleLabel" aria-label="Wika">
+          <button type="button" data-lang="fil" aria-pressed="true"
+                  class="press px-3 py-1.5 font-head font-extrabold">Fil</button>
+          <button type="button" data-lang="en" aria-pressed="false"
+                  class="press px-3 py-1.5 font-head font-extrabold border-l-[3px] border-black">En</button>
+        </div>
+        <p class="font-head font-bold text-[11px] leading-tight text-right uppercase tracking-wide opacity-80 min-w-0">
+          <span data-i18n="tagline1">Budget</span><br /><span data-i18n="tagline2">sa Pagkain</span>
+        </p>
+      </div>
     </div>
   </header>
 
@@ -74,12 +85,12 @@
          follows the transition instead of the whole <main> re-announcing on
          every state change (that was the old aria-live="polite" behaviour). -->
     <section data-screen="input" tabindex="-1">
-      <h1 lang="tl" class="font-head font-extrabold text-3xl leading-tight mb-2">Magkano ang budget?</h1>
-      <p class="text-sm opacity-70 mb-7">Enter what you can spend today. Kain finds the most nutritious plan that fits.</p>
+      <h1 lang="tl" data-i18n="inputTitle" class="font-head font-extrabold text-3xl leading-tight mb-2">Magkano ang budget?</h1>
+      <p data-i18n="inputSubtitle" class="text-sm opacity-70 mb-7">Ilagay kung magkano ang pwede mong gastusin ngayon. Hahanapin ni Kain ang pinaka-masustansyang planong kasya dito.</p>
 
       <form id="plan-form" novalidate class="space-y-6">
         <div>
-          <label for="budget" class="block font-head font-bold text-sm mb-2">Food budget</label>
+          <label for="budget" data-i18n="budgetLabel" class="block font-head font-bold text-sm mb-2">Budget sa pagkain</label>
           <div class="bubble bg-white shadow-pop flex items-center overflow-hidden focus-within:shadow-pop-lg transition-shadow">
             <span class="pl-5 pr-1 text-2xl font-head font-extrabold text-kain-green" aria-hidden="true">₱</span>
             <input id="budget" name="budget" type="number" inputmode="numeric" min="1" max="100000" step="1"
@@ -89,13 +100,13 @@
         </div>
 
         <div>
-          <label for="familySize" class="block font-head font-bold text-sm mb-2">How many people?</label>
+          <label for="familySize" data-i18n="familyLabel" class="block font-head font-bold text-sm mb-2">Ilang katao?</label>
           <div class="bubble bg-white shadow-pop flex items-center justify-between p-2">
-            <button type="button" data-step="-1" aria-label="Fewer people"
+            <button type="button" data-step="-1" data-i18n-aria="fewerPeopleAria" aria-label="Bawasan ang tao"
                     class="press h-12 w-12 shrink-0 rounded-full border-[3px] border-black bg-kain-cream font-head text-2xl font-extrabold leading-none">−</button>
             <input id="familySize" name="familySize" type="number" inputmode="numeric" min="1" max="20" step="1" value="4"
                    class="w-full bg-transparent text-center text-2xl font-head font-extrabold outline-none" />
-            <button type="button" data-step="1" aria-label="More people"
+            <button type="button" data-step="1" data-i18n-aria="morePeopleAria" aria-label="Dagdagan ang tao"
                     class="press h-12 w-12 shrink-0 rounded-full border-[3px] border-black bg-kain-cream font-head text-2xl font-extrabold leading-none">+</button>
           </div>
         </div>
@@ -105,15 +116,15 @@
              budget/days and that day is repeated. See app-state.js finish(). -->
         <div>
           <label for="days" class="block font-head font-bold text-sm mb-2">
-            <span lang="tl">Ilang araw?</span>
-            <span class="font-body font-normal opacity-60">— how long must this budget last</span>
+            <span lang="tl" data-i18n="daysLabel">Ilang araw?</span>
+            <span class="font-body font-normal opacity-60" data-i18n="daysLabelHint">— gaano katagal dapat tumagal ang budget na ito</span>
           </label>
           <div class="bubble bg-white shadow-pop flex items-center justify-between p-2">
-            <button type="button" data-step-days="-1" aria-label="Fewer days"
+            <button type="button" data-step-days="-1" data-i18n-aria="fewerDaysAria" aria-label="Bawasan ang araw"
                     class="press h-12 w-12 shrink-0 rounded-full border-[3px] border-black bg-kain-cream font-head text-2xl font-extrabold leading-none">−</button>
             <input id="days" name="days" type="number" inputmode="numeric" min="1" max="14" step="1" value="1"
                    class="w-full bg-transparent text-center text-2xl font-head font-extrabold outline-none" />
-            <button type="button" data-step-days="1" aria-label="More days"
+            <button type="button" data-step-days="1" data-i18n-aria="moreDaysAria" aria-label="Dagdagan ang araw"
                     class="press h-12 w-12 shrink-0 rounded-full border-[3px] border-black bg-kain-cream font-head text-2xl font-extrabold leading-none">+</button>
           </div>
           <p class="mt-2 text-xs opacity-60" data-bind="perDayHint"></p>
@@ -126,37 +137,35 @@
 
         <!-- App-level failures (e.g. recipe data unavailable). Owned by
              showFatal(); the state machine never touches it, so it persists.
-             Text is always Tagalog (see showFatal() call sites in app.js). -->
+             Its lang attribute follows the active locale — see showFatal()
+             and applyLocale() in app.js. -->
         <p id="app-error" role="alert" tabindex="-1" lang="tl" hidden
            class="bubble bg-red-100 px-4 py-3 text-sm font-medium"></p>
 
         <!-- Ships disabled: solving against an unloaded recipe list produces a
              bogus "nothing fits your budget" screen. app.js enables it. -->
-        <button type="submit" disabled data-bind="submit" lang="tl"
+        <button type="submit" disabled data-bind="submit" data-i18n="submitButton" lang="tl"
                 class="press w-full rounded-full border-[3px] border-black bg-kain-yellow py-4 font-head text-lg font-extrabold shadow-pop-lg disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed">
           Gawin ang plano
         </button>
       </form>
 
-      <p class="mt-6 text-center text-xs opacity-50">Works offline · No account needed · Free</p>
+      <p data-i18n="footerNote" class="mt-6 text-center text-xs opacity-50">Gumagana kahit walang internet · Walang kailangang account · Libre</p>
     </section>
 
     <!-- ============ SCREEN 2: CALCULATING ============ -->
     <section data-screen="calculating" tabindex="-1" hidden class="py-16 text-center">
       <div class="simmer mx-auto mb-8 h-24 w-24 rounded-full border-[3px] border-black bg-kain-yellow shadow-pop-lg"></div>
-      <h2 lang="tl" class="font-head text-2xl font-extrabold">Naghahanap ng pinakamainam…</h2>
-      <p class="mt-2 text-sm opacity-70">Checking every combination that fits your budget.</p>
+      <h2 lang="tl" data-i18n="calculatingTitle" class="font-head text-2xl font-extrabold">Naghahanap ng pinakamainam…</h2>
+      <p data-i18n="calculatingSubtitle" class="mt-2 text-sm opacity-70">Sinusuri ang bawat kumbinasyong kasya sa iyong budget.</p>
     </section>
 
     <!-- ============ SCREEN 3: RESULTS ============ -->
     <section data-screen="results" tabindex="-1" hidden class="space-y-7">
       <div class="bubble bg-kain-green text-white shadow-pop-lg p-5">
-        <p class="font-head text-xs font-bold uppercase tracking-wider opacity-80">Your plan</p>
+        <p data-i18n="resultsYourPlan" class="font-head text-xs font-bold uppercase tracking-wider opacity-80">Ang plano mo</p>
         <p class="font-head text-4xl font-extrabold mt-1" data-bind="totalCost">₱0</p>
-        <p class="text-sm opacity-90 mt-1">
-          of <span data-bind="budget">₱0</span> budget · feeds <span data-bind="familySize">0</span>
-          · <span data-bind="leftover">₱0</span> left
-        </p>
+        <p class="text-sm opacity-90 mt-1"><span data-i18n="resultsOfPrefix">ng </span><span data-bind="budget">₱0</span><span data-i18n="resultsBudgetSuffix"> na budget · para sa </span><span data-bind="familySize">0</span><span data-i18n="resultsMidConnector"> · </span><span data-bind="leftover">₱0</span><span data-i18n="resultsLeftoverSuffix"> ang natitira</span></p>
         <!-- Money -> people -> time. The one sentence that turns a meal planner
              into a rationing tool. Hidden at a single day, where it says
              nothing the line above has not already said. -->
@@ -168,14 +177,14 @@
 
       <!-- Shown only when every recipe in the plan is already at its maxPortions
            cap with budget left unspent — see app-state.js `capped`. -->
-      <p data-bind="cappedNote" lang="tl" hidden
+      <p data-bind="cappedNote" data-i18n="cappedNote" lang="tl" hidden
          class="bubble bg-kain-yellow/40 px-4 py-3 text-xs font-medium">
         Naabot na ng mga putaheng ito ang pinakamataas na bilang ng beses na puwede
         silang lutuin sa isang araw, kaya may natitirang budget na hindi pa nagagamit.
       </p>
 
       <section>
-        <h2 lang="tl" class="font-head text-xl font-extrabold mb-1">Mga putahe</h2>
+        <h2 lang="tl" data-i18n="mealsHeading" class="font-head text-xl font-extrabold mb-1">Mga putahe</h2>
         <!-- At more than one day these are the dishes for EACH day, not the
              whole stretch — the solver is asked for one day at budget/days. -->
         <p class="text-xs opacity-60 mb-3" data-bind="mealsNote" hidden></p>
@@ -183,8 +192,8 @@
       </section>
 
       <section>
-        <h2 lang="tl" class="font-head text-xl font-extrabold mb-1">Nutrisyon na natugunan</h2>
-        <p class="text-xs opacity-60 mb-3">Share of the daily need this plan delivers for the whole family.</p>
+        <h2 lang="tl" data-i18n="nutritionHeading" class="font-head text-xl font-extrabold mb-1">Nutrisyon na natugunan</h2>
+        <p data-i18n="nutritionSubtitle" class="text-xs opacity-60 mb-3">Bahagi ng pang-araw-araw na pangangailangan na naibibigay ng planong ito sa buong pamilya.</p>
         <div class="bubble bg-white shadow-pop p-4">
           <!-- Chart.js runs with maintainAspectRatio:false, which sizes the
                canvas to its parent. That parent MUST have a determinate height
@@ -208,8 +217,8 @@
       </section>
 
       <section>
-        <h2 lang="tl" class="font-head text-xl font-extrabold mb-1">Listahan sa palengke</h2>
-        <p class="text-xs opacity-60 mb-1">Tick each item as you buy it — exact quantities, nothing extra to spoil at home.</p>
+        <h2 lang="tl" data-i18n="shoppingHeading" class="font-head text-xl font-extrabold mb-1">Listahan sa palengke</h2>
+        <p data-i18n="shoppingSubtitle" class="text-xs opacity-60 mb-1">Markahan ang bawat bilihin habang binibili — eksaktong dami, walang matitirang masisira sa bahay.</p>
         <!-- One trip covers every day in the plan; quantities are already
              multiplied. Hidden at a single day. -->
         <p data-bind="shoppingSpan" lang="tl" hidden class="text-xs font-bold opacity-75 mb-1"></p>
@@ -226,7 +235,7 @@
                one screen is how the D-2/D-3 reconciliation bugs read to a user. -->
           <div class="border-t-[3px] border-black bg-kain-cream px-4 py-3">
             <div class="flex items-center justify-between text-xs font-bold">
-              <span lang="tl">Nasa basket na</span>
+              <span lang="tl" data-i18n="inBasketLabel">Nasa basket na</span>
               <span data-bind="marketItems" class="opacity-60">0/0 items</span>
             </div>
             <div class="mt-2 h-3 w-full overflow-hidden rounded-full border-2 border-black bg-white">
@@ -237,7 +246,7 @@
           </div>
 
           <div class="flex items-center justify-between bg-kain-yellow border-t-[3px] border-black px-4 py-3">
-            <span lang="tl" class="font-head font-extrabold">Kabuuan</span>
+            <span lang="tl" data-i18n="totalLabel" class="font-head font-extrabold">Kabuuan</span>
             <span class="font-head font-extrabold text-lg" data-bind="listTotal">₱0</span>
           </div>
         </div>
@@ -246,7 +255,7 @@
       <!-- Plain text over the Web Share API, clipboard as the fallback. Mom
            plans, a kid walks to the palengke; both paths work with no signal. -->
       <div class="space-y-2">
-        <button type="button" data-action="share" lang="tl"
+        <button type="button" data-action="share" data-i18n="shareButton" lang="tl"
                 class="press w-full rounded-full border-[3px] border-black bg-kain-yellow py-4 font-head text-lg font-extrabold shadow-pop-lg">
           Ibahagi ang listahan
         </button>
@@ -254,7 +263,7 @@
            class="text-center text-xs font-medium opacity-70"></p>
       </div>
 
-      <button type="button" data-action="reset" lang="tl"
+      <button type="button" data-action="reset" data-i18n="newBudgetButton" lang="tl"
               class="press w-full rounded-full border-[3px] border-black bg-white py-4 font-head text-lg font-extrabold shadow-pop">
         Bagong budget
       </button>
@@ -263,25 +272,22 @@
     <!-- ============ SCREEN 4: EMPTY / NOTHING FITS ============ -->
     <section data-screen="empty" tabindex="-1" hidden class="py-10 text-center">
       <div class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full border-[3px] border-black bg-white shadow-pop-lg text-4xl">🍚</div>
-      <h2 lang="tl" class="font-head text-2xl font-extrabold">Kulang pa ang budget</h2>
-      <p class="mx-auto mt-3 max-w-xs text-sm opacity-75">
-        No complete meal for <span data-bind="emptyFamily">0</span> fits
-        <span data-bind="emptyBudget">₱0</span> yet.
-      </p>
+      <h2 lang="tl" data-i18n="emptyTitle" class="font-head text-2xl font-extrabold">Kulang pa ang budget</h2>
+      <p class="mx-auto mt-3 max-w-xs text-sm opacity-75"><span data-i18n="emptyPrefix">Walang kumpletong putahe para sa </span><span data-bind="emptyFamily">0</span><span data-i18n="emptyMid"> na kasya sa </span><span data-bind="emptyBudget">₱0</span><span data-i18n="emptySuffix"> sa ngayon.</span></p>
       <!-- Leads with what the money DOES buy. "Try at least ₱30" on its own is
            a dead end for someone holding ₱20 — precisely the user Kain is for.
            Hidden when the budget does not even reach one serving. -->
       <div data-bind="partialBox" hidden class="bubble bg-white shadow-pop mx-auto mt-6 max-w-xs p-4 text-left">
-        <p lang="tl" class="text-xs font-bold uppercase tracking-wide opacity-70">Pero kaya nito ang</p>
+        <p lang="tl" data-i18n="emptyPartialLead" class="text-xs font-bold uppercase tracking-wide opacity-70">Pero kaya nito ang</p>
         <p lang="tl" class="font-head text-xl font-extrabold leading-tight mt-1" data-bind="partialMeal">—</p>
         <p lang="tl" class="text-xs opacity-70 mt-1" data-bind="partialDetail"></p>
       </div>
 
       <div class="bubble bg-kain-yellow shadow-pop mx-auto mt-4 max-w-xs p-4">
-        <p class="text-xs font-bold uppercase tracking-wide opacity-70">Try at least</p>
+        <p data-i18n="tryAtLeastLabel" class="text-xs font-bold uppercase tracking-wide opacity-70">Subukan ng hindi bababa sa</p>
         <p class="font-head text-3xl font-extrabold" data-bind="minimumBudget">₱0</p>
       </div>
-      <button type="button" data-action="reset" lang="tl"
+      <button type="button" data-action="reset" data-i18n="changeBudgetButton" lang="tl"
               class="press mt-7 w-full rounded-full border-[3px] border-black bg-white py-4 font-head text-lg font-extrabold shadow-pop">
         Baguhin ang budget
       </button>

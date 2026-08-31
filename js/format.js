@@ -4,7 +4,13 @@
  * Lives outside js/app.js on purpose: app.js is a thin DOM writer with no
  * logic worth testing, so every string a user actually reads is produced here
  * where the node test suite can cover it. Pure — no DOM, no network.
+ *
+ * Every function that produces user-facing copy takes an optional trailing
+ * `locale` argument (`'fil'` | `'en'`, see js/i18n.js) and defaults to
+ * `DEFAULT_LOCALE`. Numbers, pesos and proper nouns (recipe/ingredient names)
+ * are never translated — only the words around them.
  */
+import { t, DEFAULT_LOCALE } from './i18n.js';
 
 /** Pesos, with centavos only when they exist. `1200` -> `₱1,200`. */
 export function formatPeso(value) {
@@ -22,6 +28,14 @@ export function formatQuantity(quantity, unit) {
   return `${Number(amount.toFixed(2))} ${unit}`;
 }
 
+/** `4, 'en'` -> `'4 people'`; `1, 'fil'` -> `'1 tao'`. The bare count-plus-word
+ *  used wherever a family size needs a word next to it (results header,
+ *  empty screen) — kept here so English and Filipino agree on the noun. */
+export function familySizeLabel(count, locale = DEFAULT_LOCALE) {
+  const size = Number.isFinite(count) && count >= 1 ? Math.floor(count) : 1;
+  return `${size} ${t(size === 1 ? 'person' : 'peopleWord', locale)}`;
+}
+
 /**
  * Width of a coverage bar, clamped to its track. The *label* still shows the
  * true figure (protein can legitimately read 103.5%); only the bar is capped,
@@ -33,24 +47,39 @@ export function barWidth(percent) {
 }
 
 /**
- * `3, 12` -> `3 batches · 12 servings`.
+ * `3, 12` -> `3 beses · 12 porsyon` (fil) / `3 batches · 12 servings` (en).
  *
  * Given a family size it also says what that means per person: `12 servings`
- * is a number you have to do arithmetic on, `3 meals each` is not. The third
+ * is a number you have to do arithmetic on, `3 per person` is not. The third
  * argument is optional so the two-argument form — quoted in DEVNOTES and the
- * pitch materials — keeps its exact output.
+ * pitch materials — keeps its exact output at the default locale.
  */
-export function formatPortions(portions, servings, familySize) {
-  const batch = portions === 1 ? 'batch' : 'batches';
-  const base = `${portions} ${batch} · ${servings} servings`;
-  if (!Number.isFinite(familySize) || familySize < 1) return base;
+export function formatPortions(portions, servings, familySize, locale = DEFAULT_LOCALE) {
+  const batchWord = portions === 1 ? t('batch', locale) : t('batches', locale);
   // "per person", never "meals". A serving is one portion of ONE dish, and a
   // day's plan stacks several dishes: at ₱666/day for four people the plan is
   // 40 servings, which is ten portions each and about one day of energy — not
   // ten meals. Calling a serving a meal overstates it by roughly the number of
   // dishes in the plan.
+  const base = `${portions} ${batchWord} · ${servings} ${t('servings', locale)}`;
+  if (!Number.isFinite(familySize) || familySize < 1) return base;
   const each = round1(servings / familySize);
-  return `${base} · ${each} per person`;
+  return `${base} · ${each} ${t('perPersonSuffix', locale)}`;
+}
+
+/**
+ * The consolation-prize sentence on the empty screen: what the budget still
+ * buys, restated with the correct singular/plural serving word.
+ */
+export function partialMealLabel({ servings, name } = {}, locale = DEFAULT_LOCALE) {
+  const count = Number.isFinite(servings) && servings >= 1 ? Math.floor(servings) : 0;
+  const servingWord = t(count === 1 ? 'serving' : 'servings', locale);
+  return t('partialMeal', locale, { servings: count, servingWord, name });
+}
+
+/** `1200, 'en'` -> `'₱1,200 — not enough for the whole family yet, ...'`. */
+export function partialDetailLabel(cost, locale = DEFAULT_LOCALE) {
+  return t('partialDetail', locale, { cost: formatPeso(cost) });
 }
 
 /* ── the day dimension (ROADMAP A2) ───────────────────────────────────── */
@@ -67,10 +96,11 @@ export function formatPortions(portions, servings, familySize) {
  *
  * @returns {{days:number, isMultiDay:boolean, perDayText:string, spanText:string, cookText:string}}
  */
-export function describeDayPlan({ days, dailySpend, budget, totalCost, familySize } = {}) {
+export function describeDayPlan({ days, dailySpend, budget, totalCost, familySize } = {}, locale = DEFAULT_LOCALE) {
   const dayCount = Number.isFinite(days) && days >= 1 ? Math.floor(days) : 1;
   const people = Number.isFinite(familySize) && familySize >= 1 ? Math.floor(familySize) : 1;
-  const dayWord = dayCount === 1 ? 'day' : 'days';
+  const personWord = t(people === 1 ? 'person' : 'peopleWord', locale);
+  const dayWord = t(dayCount === 1 ? 'day' : 'days', locale);
 
   return {
     days: dayCount,
@@ -82,16 +112,17 @@ export function describeDayPlan({ days, dailySpend, budget, totalCost, familySiz
      * the same reconciliation confusion as bugs D-2 and D-3. Spend x days is
      * the plan total exactly.
      */
-    perDayText: `${formatPeso(dailySpend ?? totalCost ?? budget)} a day`,
+    perDayText: t('perDayText', locale, { amount: formatPeso(dailySpend ?? totalCost ?? budget) }),
     /** The headline framing: money -> people -> time. */
-    spanText:
-      `${formatPeso(totalCost)} feeds ${people} ${people === 1 ? 'person' : 'people'} ` +
-      `for ${dayCount} ${dayWord}`,
+    spanText: t('spanText', locale, {
+      total: formatPeso(totalCost),
+      family: people,
+      personWord,
+      days: dayCount,
+      dayWord
+    }),
     /** What to actually do with it. */
-    cookText:
-      dayCount === 1
-        ? 'Cook this today.'
-        : `Cook this same set of dishes each day for ${dayCount} ${dayWord}.`
+    cookText: dayCount === 1 ? t('cookToday', locale) : t('cookRepeat', locale, { days: dayCount, dayWord })
   };
 }
 
@@ -99,10 +130,10 @@ export function describeDayPlan({ days, dailySpend, budget, totalCost, familySiz
  * The shopping list covers every day at once — one trip, not one per day.
  * Null at a single day, where saying so would be noise.
  */
-export function shoppingSpanNote(days) {
+export function shoppingSpanNote(days, locale = DEFAULT_LOCALE) {
   const dayCount = Number.isFinite(days) && days >= 1 ? Math.floor(days) : 1;
   if (dayCount === 1) return null;
-  return `Para sa buong ${dayCount} araw — isang punta lang sa palengke.`;
+  return t('shoppingSpanNote', locale, { days: dayCount });
 }
 
 /* ── plain language (ROADMAP B2) ──────────────────────────────────────── */
@@ -121,17 +152,17 @@ const KCAL_PER_CUP_RICE = 200;
  * "RENI". Tones map onto the colours the chart already uses (see drawChart).
  */
 const VERDICT_BANDS = [
-  { min: 150, label: 'Sobra', tone: 'over' },
-  { min: 100, label: 'Sapat', tone: 'ok' },
-  { min: 70, label: 'Halos sapat', tone: 'near' },
-  { min: 0, label: 'Kulang', tone: 'low' }
+  { min: 150, key: 'verdictOver', tone: 'over' },
+  { min: 100, key: 'verdictOk', tone: 'ok' },
+  { min: 70, key: 'verdictNear', tone: 'near' },
+  { min: 0, key: 'verdictLow', tone: 'low' }
 ];
 
 /** `59.3` -> `{ label: 'Kulang', tone: 'low' }`. */
-export function coverageVerdict(percent) {
+export function coverageVerdict(percent, locale = DEFAULT_LOCALE) {
   const value = Number.isFinite(percent) ? Math.max(0, percent) : 0;
   const band = VERDICT_BANDS.find((b) => value >= b.min) ?? VERDICT_BANDS[VERDICT_BANDS.length - 1];
-  return { label: band.label, tone: band.tone };
+  return { label: t(band.key, locale), tone: band.tone };
 }
 
 /**
@@ -144,7 +175,7 @@ export function coverageVerdict(percent) {
  *
  * Returns null when energy is adequately covered, so the caller hides the note.
  */
-export function energyGapNote(coverage) {
+export function energyGapNote(coverage, locale = DEFAULT_LOCALE) {
   const energy = coverage?.calories;
   if (!energy || !Number.isFinite(energy.percent) || energy.percent >= 90) return null;
 
@@ -158,13 +189,10 @@ export function energyGapNote(coverage) {
   // for anything, every nutrient is short and claiming otherwise would be a
   // cheerful lie to the user who can least afford one.
   const lead = OTHER_NUTRIENTS.every((key) => (coverage?.[key]?.percent ?? 0) >= 100)
-    ? 'Malakas sa sustansya ang planong ito pero kulang pa sa enerhiya'
-    : 'Kulang pa sa enerhiya ang planong ito';
+    ? t('energyGapStrongLead', locale)
+    : t('energyGapWeakLead', locale);
 
-  return (
-    `${lead} — mga ${cups} tasang kanin pa ang kailangan ng buong pamilya ` +
-    `para sa isang araw. Kung may matitirang budget, kanin ang pinakamurang pandagdag.`
-  );
+  return lead + t('energyGapBody', locale, { cups });
 }
 
 /** Everything tracked except energy — see the lead-clause choice above. */
@@ -172,7 +200,7 @@ const OTHER_NUTRIENTS = ['protein', 'iron', 'vitaminA'];
 
 /**
  * What a plan means per person: `20 servings` is a figure you have to divide,
- * `5 meals each` is not. Derived entirely from what the plan already carries —
+ * `5 per person` is not. Derived entirely from what the plan already carries —
  * servings and family size — so no number on screen stops being one the solver
  * produced (ROADMAP A2: presentation only, no data-contract change).
  *
@@ -184,27 +212,26 @@ const OTHER_NUTRIENTS = ['protein', 'iron', 'vitaminA'];
  * is ever wanted for real, it needs the recipe/plan data contract to carry one
  * — which per the project's own rule requires both developers to agree first.
  */
-export function describePlanSpan(plan) {
+export function describePlanSpan(plan, locale = DEFAULT_LOCALE) {
   const familySize = Number.isFinite(plan?.familySize) && plan.familySize >= 1 ? plan.familySize : 1;
   const servings = (plan?.meals ?? []).reduce(
     (total, meal) => total + (Number.isFinite(meal?.servings) ? meal.servings : 0),
     0
   );
   const servingsEach = round1(servings / familySize);
-  const people = familySize === 1 ? 'person' : 'people';
+  const personWord = t(familySize === 1 ? 'person' : 'peopleWord', locale);
 
   return {
     servings,
     servingsEach,
-    text:
-      `${servings} servings · about ${servingsEach} per person ` +
-      `across ${familySize} ${people}`
+    text: t('planSpanText', locale, { servings, each: servingsEach, family: familySize, personWord })
   };
 }
 
 /* ── price vintage (ROADMAP B4) ───────────────────────────────────────── */
 
-/** Tagalog month abbreviations, January first. */
+/** Tagalog month abbreviations, January first. Used at every locale — a date
+ *  reads the same either way, and this is what the smoke-test data quotes. */
 const MONTHS_TL = ['Ene', 'Peb', 'Mar', 'Abr', 'May', 'Hun', 'Hul', 'Ago', 'Set', 'Okt', 'Nob', 'Dis'];
 
 /**
@@ -226,15 +253,12 @@ export function formatPriceDate(iso) {
  * metadata never arrived, so a missing meta.json simply hides the line rather
  * than blocking a plan.
  */
-export function priceVintageLine(meta) {
+export function priceVintageLine(meta, locale = DEFAULT_LOCALE) {
   const latest = formatPriceDate(meta?.prices?.latest);
   if (!latest) return null;
   const { sourced, total } = meta.prices;
-  const counts =
-    Number.isFinite(sourced) && Number.isFinite(total)
-      ? ` · ${sourced}/${total} sangkap may pinagkunan`
-      : '';
-  return `Presyo noong ${latest}${counts}`;
+  if (!Number.isFinite(sourced) || !Number.isFinite(total)) return null;
+  return t('priceVintage', locale, { date: latest, sourced, total });
 }
 
 /* ── market mode (ROADMAP B1) ─────────────────────────────────────────── */
@@ -247,7 +271,7 @@ export function priceVintageLine(meta) {
  * it as `Kabuuan`. Using the budget instead would put two different
  * denominators on one screen for no gain.
  */
-export function marketProgress(spent, total, checkedCount, itemCount) {
+export function marketProgress(spent, total, checkedCount, itemCount, locale = DEFAULT_LOCALE) {
   const safeTotal = Number.isFinite(total) && total > 0 ? total : 0;
   const safeSpent = Math.min(Math.max(Number.isFinite(spent) ? spent : 0, 0), safeTotal);
   const checked = Number.isFinite(checkedCount) ? checkedCount : 0;
@@ -256,8 +280,8 @@ export function marketProgress(spent, total, checkedCount, itemCount) {
   return {
     percent: safeTotal > 0 ? round1((safeSpent / safeTotal) * 100) : 0,
     remaining: round2(safeTotal - safeSpent),
-    spentText: `${formatPeso(safeSpent)} of ${formatPeso(safeTotal)}`,
-    itemsText: `${checked}/${items} ${items === 1 ? 'item' : 'items'}`,
+    spentText: t('marketSpentText', locale, { spent: formatPeso(safeSpent), total: formatPeso(safeTotal) }),
+    itemsText: `${checked}/${items} ${t(items === 1 ? 'item' : 'items', locale)}`,
     done: items > 0 && checked >= items
   };
 }
@@ -269,7 +293,7 @@ export function marketProgress(spent, total, checkedCount, itemCount) {
  * doing the planning and the person walking to the palengke are often not the
  * same person.
  */
-export function formatPlanAsText(plan, shoppingList, { days = 1, budget, totalCost } = {}) {
+export function formatPlanAsText(plan, shoppingList, { days = 1, budget, totalCost, locale = DEFAULT_LOCALE } = {}) {
   const meals = plan?.meals ?? [];
   const items = shoppingList?.items ?? [];
   const familySize = Number.isFinite(plan?.familySize) ? plan.familySize : 1;
@@ -277,27 +301,31 @@ export function formatPlanAsText(plan, shoppingList, { days = 1, budget, totalCo
   const wholeBudget = Number.isFinite(budget) ? budget : (plan?.budget ?? 0);
   const spend = Number.isFinite(totalCost) ? totalCost : (plan?.totalCost ?? 0);
   const leftover = wholeBudget - spend;
+  const personWord = t(familySize === 1 ? 'person' : 'peopleWord', locale);
 
   const lines = [
-    'KAIN — plano sa palengke',
-    `Budget ${formatPeso(wholeBudget)} · ${familySize} ${familySize === 1 ? 'tao' : 'katao'}` +
-      (dayCount > 1 ? ` · ${dayCount} araw` : ''),
+    t('shareHeader', locale),
+    `Budget ${formatPeso(wholeBudget)} · ${familySize} ${personWord}` +
+      (dayCount > 1 ? ` · ${dayCount} ${t('days', locale)}` : ''),
     '',
-    dayCount > 1 ? 'MGA PUTAHE (araw-araw)' : 'MGA PUTAHE'
+    dayCount > 1 ? t('shareDishesHeadingDaily', locale) : t('shareDishesHeading', locale)
   ];
 
   for (const meal of meals) {
     lines.push(`- ${meal.recipe?.name} x${meal.portions} — ${formatPeso(meal.cost)}`);
   }
 
-  lines.push('', dayCount > 1 ? `LISTAHAN SA PALENGKE (buong ${dayCount} araw)` : 'LISTAHAN SA PALENGKE');
+  lines.push(
+    '',
+    dayCount > 1 ? t('shareListHeadingDaily', locale, { days: dayCount }) : t('shareListHeading', locale)
+  );
   for (const item of items) {
     lines.push(`- ${item.name} ${formatQuantity(item.quantity, item.unit)} — ${formatPeso(item.cost)}`);
   }
 
   lines.push(
     '',
-    `KABUUAN ${formatPeso(shoppingList?.totalCost)} · ${formatPeso(leftover)} natira sa budget`
+    t('shareTotalLine', locale, { total: formatPeso(shoppingList?.totalCost), leftover: formatPeso(leftover) })
   );
 
   return lines.join('\n');
