@@ -16,11 +16,15 @@ import { createAppState, MAX_FAMILY_SIZE, MAX_DAYS } from './app-state.js';
 import { NUTRIENTS } from './nutrition.js';
 import { itemKey } from './shopping-list.js';
 import { storage } from './storage.js';
+import { t } from './i18n.js';
 import {
   formatPeso,
   formatQuantity,
   barWidth,
   formatPortions,
+  familySizeLabel,
+  partialMealLabel,
+  partialDetailLabel,
   coverageVerdict,
   energyGapNote,
   describePlanSpan,
@@ -46,6 +50,11 @@ const bind = (name) => document.querySelector(`[data-bind="${name}"]`);
 let recipes = [];
 let chart = null;
 let previousScreen = null;
+
+/** The active UI language. Read from storage on boot, changed only by the
+ *  header toggle. Every function below that produces user-facing text takes
+ *  this as its `locale` argument — see js/i18n.js and js/format.js. */
+let locale = storage.readLocale();
 
 /**
  * Identity of the structures currently painted. The results screen re-renders
@@ -75,10 +84,14 @@ async function loadRecipes() {
     // Only now is a plan solvable — see the disabled attribute in index.html.
     bind('submit').disabled = false;
   } catch (error) {
-    showFatal('Hindi ma-load ang recipe data. Buksan muli ang app habang may internet.');
+    showFatal('recipeLoadFailed');
     console.error('[kain] recipe load failed', error);
   }
 }
+
+/** Cached so a later language toggle can re-render the vintage line without
+ *  a second fetch — see renderPriceVintage(). */
+let priceMeta = null;
 
 /**
  * Price provenance. Strictly non-blocking: a plan must still solve if this
@@ -86,19 +99,24 @@ async function loadRecipes() {
  * awaited on the path to a result.
  */
 async function loadPriceVintage() {
-  const line = bind('priceVintage');
   try {
     const response = await fetch('data/meta.json');
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const text = priceVintageLine(await response.json());
-    if (!text) return;
-    line.textContent = text;
-    line.hidden = false;
+    priceMeta = await response.json();
+    renderPriceVintage();
   } catch (error) {
     // Deliberately quiet: this is a provenance nicety, not a failure the user
     // can act on, and the plan itself is unaffected.
     console.warn('[kain] price metadata unavailable', error);
   }
+}
+
+function renderPriceVintage() {
+  const line = bind('priceVintage');
+  const text = priceVintageLine(priceMeta, locale);
+  line.hidden = !text;
+  line.textContent = text ?? '';
+  line.lang = locale === 'fil' ? 'tl' : 'en';
 }
 
 /* ── rendering ────────────────────────────────────────────────────────── */
@@ -145,27 +163,32 @@ function renderResults(state) {
   // The whole trip, not one day of it: state.totalCost is plan.totalCost x days
   // and state.budget is the money the user actually entered.
   const spend = state.totalCost ?? plan.totalCost;
-  const day = describeDayPlan({ ...state, dailySpend: plan.totalCost });
+  const day = describeDayPlan({ ...state, dailySpend: plan.totalCost }, locale);
 
   bind('totalCost').textContent = formatPeso(spend);
   bind('budget').textContent = formatPeso(state.budget);
-  bind('familySize').textContent = `${plan.familySize} ${plan.familySize === 1 ? 'person' : 'people'}`;
+  bind('familySize').textContent = familySizeLabel(plan.familySize, locale);
   bind('leftover').textContent = formatPeso(state.budget - spend);
   bind('planSpan').textContent =
-    describePlanSpan(plan).text + (day.isMultiDay ? ', each day' : '');
+    describePlanSpan(plan, locale).text + (day.isMultiDay ? t('planSpanDailySuffix', locale) : '');
+
+  const lang = locale === 'fil' ? 'tl' : 'en';
 
   const daySpan = bind('daySpan');
   daySpan.textContent = day.isMultiDay ? `${day.spanText} · ${day.perDayText}` : '';
   daySpan.hidden = !day.isMultiDay;
+  daySpan.lang = lang;
 
   const mealsNote = bind('mealsNote');
   mealsNote.textContent = day.isMultiDay ? day.cookText : '';
   mealsNote.hidden = !day.isMultiDay;
+  mealsNote.lang = lang;
 
   const shoppingSpan = bind('shoppingSpan');
-  const spanNote = shoppingSpanNote(day.days);
+  const spanNote = shoppingSpanNote(day.days, locale);
   shoppingSpan.textContent = spanNote ?? '';
   shoppingSpan.hidden = spanNote === null;
+  shoppingSpan.lang = lang;
 
   const cappedNote = bind('cappedNote');
   if (cappedNote) cappedNote.hidden = !state.capped;
@@ -173,16 +196,17 @@ function renderResults(state) {
   // Structural repaint only when the plan itself changed — see renderedList.
   if (shoppingList !== renderedList) {
     bind('meals').replaceChildren(...plan.meals.map((meal) => mealCard(meal, plan.familySize)));
-    bind('coverage').replaceChildren(...NUTRIENTS.map(({ key }) => coverageRow(coverage[key])));
+    bind('coverage').replaceChildren(...NUTRIENTS.map(({ key }) => coverageRow(coverage[key], key)));
 
     shoppingRows.clear();
     bind('shopping').replaceChildren(...shoppingList.items.map(shoppingRow));
     bind('listTotal').textContent = formatPeso(shoppingList.totalCost);
 
-    const note = energyGapNote(coverage);
+    const note = energyGapNote(coverage, locale);
     const energyNote = bind('energyNote');
     energyNote.textContent = note ?? '';
     energyNote.hidden = note === null;
+    energyNote.lang = lang;
 
     renderedList = shoppingList;
   }
@@ -205,11 +229,21 @@ function mealCard(meal, familySize) {
   const text = el('div', 'min-w-0');
   text.append(
     el('p', 'font-head font-extrabold text-lg leading-tight', meal.recipe.name),
-    el('p', 'text-xs opacity-60 mt-1', formatPortions(meal.portions, meal.servings, familySize))
+    el('p', 'text-xs opacity-60 mt-1', formatPortions(meal.portions, meal.servings, familySize, locale))
   );
   li.append(text, el('p', 'font-head font-extrabold text-kain-green shrink-0', formatPeso(meal.cost)));
   return li;
 }
+
+/** Nutrient key -> the i18n key naming it. See NUTRIENTS in nutrition.js for
+ *  the (English, science-facing) key names themselves — display names are a
+ *  presentation concern and stay here, not in the nutrition module. */
+const NUTRIENT_I18N_KEY = {
+  calories: 'nutrientCalories',
+  protein: 'nutrientProtein',
+  iron: 'nutrientIron',
+  vitaminA: 'nutrientVitaminA'
+};
 
 /**
  * Verdict tones -> chip styling and bar colour. One map, two renderers, so the
@@ -228,16 +262,16 @@ const VERDICT_STYLE = {
   over: { chip: 'bg-white border-2 border-kain-green text-kain-green', bar: '#4A7856' }
 };
 
-function coverageRow(entry) {
+function coverageRow(entry, nutrientKey) {
   const li = el('li', 'flex items-center justify-between gap-2');
-  const verdict = coverageVerdict(entry.percent);
+  const verdict = coverageVerdict(entry.percent, locale);
 
   const chip = el(
     'span',
     `rounded-full px-2 py-[3px] text-[10px] font-extrabold leading-none ${VERDICT_STYLE[verdict.tone].chip}`,
     verdict.label
   );
-  chip.lang = 'tl';
+  chip.lang = locale === 'fil' ? 'tl' : 'en';
 
   const figures = el('div', 'flex items-center gap-2 shrink-0');
   figures.append(
@@ -245,7 +279,8 @@ function coverageRow(entry) {
     chip
   );
 
-  li.append(el('span', 'opacity-70', entry.label), figures);
+  const label = el('span', 'opacity-70', t(NUTRIENT_I18N_KEY[nutrientKey] ?? '', locale) || entry.label);
+  li.append(label, figures);
   return li;
 }
 
@@ -298,7 +333,8 @@ function renderMarket(state) {
     spent,
     shoppingList?.totalCost ?? 0,
     checkedKeys.size,
-    shoppingList?.items.length ?? 0
+    shoppingList?.items.length ?? 0,
+    locale
   );
   bind('marketItems').textContent = progress.itemsText;
   bind('marketSpent').textContent = progress.spentText;
@@ -306,7 +342,7 @@ function renderMarket(state) {
 }
 
 function renderEmpty(state) {
-  bind('emptyFamily').textContent = `${state.familySize} ${state.familySize === 1 ? 'person' : 'people'}`;
+  bind('emptyFamily').textContent = familySizeLabel(state.familySize, locale);
   bind('emptyBudget').textContent = formatPeso(state.budget);
   bind('minimumBudget').textContent = formatPeso(state.minimumBudget);
 
@@ -315,10 +351,13 @@ function renderEmpty(state) {
   box.hidden = !partial;
   if (!partial) return;
 
-  bind('partialMeal').textContent =
-    `${partial.servings} ${partial.servings === 1 ? 'serving' : 'servings'} ng ${partial.name}`;
-  bind('partialDetail').textContent =
-    `${formatPeso(partial.cost)} — hindi pa sapat sa buong pamilya, pero may makakain ngayon.`;
+  const lang = locale === 'fil' ? 'tl' : 'en';
+  const partialMeal = bind('partialMeal');
+  partialMeal.textContent = partialMealLabel(partial, locale);
+  partialMeal.lang = lang;
+  const partialDetail = bind('partialDetail');
+  partialDetail.textContent = partialDetailLabel(partial.cost, locale);
+  partialDetail.lang = lang;
 }
 
 /* ── chart ────────────────────────────────────────────────────────────── */
@@ -342,16 +381,18 @@ function drawChart(coverage) {
   if (coverage === renderedCoverage && chart) return;
   renderedCoverage = coverage;
 
-  const entries = NUTRIENTS.map(({ key }) => coverage[key]);
+  const keys = NUTRIENTS.map(({ key }) => key);
+  const entries = keys.map((key) => coverage[key]);
+  const labels = keys.map((key) => t(NUTRIENT_I18N_KEY[key] ?? '', locale) || coverage[key].label);
   chart?.destroy();
   chart = new Chart(canvas, {
     type: 'bar',
     data: {
-      labels: entries.map((e) => e.label),
+      labels,
       datasets: [{
         data: entries.map((e) => barWidth(e.percent)),
         // Same banding as the verdict chip beside each figure — see VERDICT_STYLE.
-        backgroundColor: entries.map((e) => VERDICT_STYLE[coverageVerdict(e.percent).tone].bar),
+        backgroundColor: entries.map((e) => VERDICT_STYLE[coverageVerdict(e.percent, locale).tone].bar),
         borderColor: '#000',
         borderWidth: 2,
         borderRadius: 8,
@@ -368,7 +409,7 @@ function drawChart(coverage) {
         tooltip: {
           callbacks: {
             // Report the real percentage, not the clamped bar value.
-            label: (ctx) => `${entries[ctx.dataIndex].percent}% of daily need`
+            label: (ctx) => `${entries[ctx.dataIndex].percent}% ${t('ofDailyNeed', locale)}`
           }
         }
       },
@@ -405,12 +446,13 @@ async function sharePlan() {
   const text = formatPlanAsText(app.plan, app.shoppingList, {
     days: app.days,
     budget: app.budget,
-    totalCost: app.totalCost
+    totalCost: app.totalCost,
+    locale
   });
 
   if (navigator.share) {
     try {
-      await navigator.share({ title: 'Kain — plano sa palengke', text });
+      await navigator.share({ title: t('shareTitle', locale), text });
       return;
     } catch (error) {
       // Dismissing the share sheet is not a failure; anything else falls
@@ -421,9 +463,9 @@ async function sharePlan() {
 
   try {
     await navigator.clipboard.writeText(text);
-    showShareStatus('Nakopya ang listahan — puwede mo nang i-paste sa text o Messenger.');
+    showShareStatus(t('shareCopied', locale));
   } catch {
-    showShareStatus('Hindi ma-share dito. Puwedeng i-screenshot na lang ang listahan.');
+    showShareStatus(t('shareFailed', locale));
   }
 }
 
@@ -444,8 +486,8 @@ function updatePerDayHint() {
   }
   hint.textContent =
     days === 1
-      ? `${formatPeso(Math.floor(budget))} for one day.`
-      : `${formatPeso(Math.floor(budget / days))} a day for ${days} days.`;
+      ? t('perDayHintOne', locale, { amount: formatPeso(Math.floor(budget)) })
+      : t('perDayHintMulti', locale, { amount: formatPeso(Math.floor(budget / days)), days });
 }
 
 document.getElementById('plan-form').addEventListener('submit', (event) => {
@@ -454,7 +496,7 @@ document.getElementById('plan-form').addEventListener('submit', (event) => {
   // recipe list yields an empty plan, which the UI would report as "nothing
   // fits your budget" — a wrong answer rather than a visible failure.
   if (recipes.length === 0) {
-    showFatal('Hindi pa handa ang recipe data. Buksan muli ang app habang may internet.');
+    showFatal('recipeNotReady');
     return;
   }
   const budget = Number.parseFloat(budgetInput.value);
@@ -502,12 +544,68 @@ for (const button of document.querySelectorAll('[data-action="share"]')) {
   button.addEventListener('click', sharePlan);
 }
 
-/** App-level failure. Sticky by design: its own element, never touched by render(). */
-function showFatal(message) {
+/** App-level failure. Sticky by design: its own element, never touched by render().
+ *  Takes an i18n key (not a message) so a later language toggle can retranslate
+ *  it in place — see applyLocale(). */
+let lastFatalKey = null;
+function showFatal(key) {
+  lastFatalKey = key;
   const error = document.getElementById('app-error');
   error.hidden = false;
-  error.textContent = message;
+  error.textContent = t(key, locale);
+  error.lang = locale === 'fil' ? 'tl' : 'en';
   error.focus();
+}
+
+/* ── language toggle ──────────────────────────────────────────────────── */
+
+const langButtons = [...document.querySelectorAll('[data-lang]')];
+
+/**
+ * Applies `locale` to every static `[data-i18n]` / `[data-i18n-aria]` element,
+ * the toggle's own pressed state, and re-renders whatever dynamic content is
+ * currently on screen — coverage verdicts, the chart's nutrient labels, share
+ * status text and so on all carry words that depend on it too.
+ */
+function applyLocale(next) {
+  locale = next;
+  const lang = locale === 'fil' ? 'tl' : 'en';
+
+  for (const el of document.querySelectorAll('[data-i18n]')) {
+    el.textContent = t(el.dataset.i18n, locale);
+    el.lang = lang;
+  }
+  for (const el of document.querySelectorAll('[data-i18n-aria]')) {
+    el.setAttribute('aria-label', t(el.dataset.i18nAria, locale));
+  }
+  for (const button of langButtons) {
+    button.setAttribute('aria-pressed', String(button.dataset.lang === locale));
+    button.classList.toggle('bg-kain-green', button.dataset.lang === locale);
+    button.classList.toggle('text-white', button.dataset.lang === locale);
+    button.classList.toggle('bg-white', button.dataset.lang !== locale);
+  }
+
+  updatePerDayHint();
+  renderPriceVintage();
+  const fatal = document.getElementById('app-error');
+  if (lastFatalKey && !fatal.hidden) {
+    fatal.textContent = t(lastFatalKey, locale);
+    fatal.lang = lang;
+  }
+  // Force the structural blocks that cache their last-painted structure (see
+  // renderedList / renderedCoverage at the top of this file) to repaint, since
+  // their content carries words that just changed under them.
+  renderedList = null;
+  renderedCoverage = null;
+  render(app);
+}
+
+for (const button of langButtons) {
+  button.addEventListener('click', () => {
+    if (button.dataset.lang === locale) return;
+    applyLocale(button.dataset.lang);
+    storage.writeLocale(locale);
+  });
 }
 
 /* ── boot ─────────────────────────────────────────────────────────────── */
@@ -522,9 +620,14 @@ if (savedInputs) {
   familyInput.value = String(savedInputs.familySize);
   if (savedInputs.days) daysInput.value = String(savedInputs.days);
 }
-updatePerDayHint();
-
 app.subscribe(render);
+
+// Paints every [data-i18n] element, the toggle's pressed state, and the
+// per-day hint in the locale restored from storage (fil unless the user
+// switched before). render(app) here is the very first paint, same as the
+// one subscribe() would otherwise wait for on the next state change.
+applyLocale(locale);
+
 loadRecipes();
 loadPriceVintage();
 

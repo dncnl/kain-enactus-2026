@@ -34,7 +34,8 @@ const PRECACHE_URLS = [
   'js/nutrition-targets.js',
   'js/shopping-list.js',
   'js/format.js',
-  'js/storage.js'
+  'js/storage.js',
+  'js/i18n.js'
 ];
 
 /** Third-party runtime deps. Cached opportunistically, never blocking. */

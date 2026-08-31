@@ -14,6 +14,10 @@
  * total as if it were today's. Re-solving on load costs ~19ms and is always
  * correct, so the inputs are the only thing worth keeping.
  *
+ * Also stores the language toggle (`fil`/`en`), for the same reason: someone
+ * who switched to English should not see Tagalog again just because the tab
+ * was evicted.
+ *
  * EVERY read and write is guarded. `localStorage` is not merely absent in some
  * environments: accessing the property itself throws when a browser is set to
  * block site data, and `setItem` throws on a full or partitioned quota. A
@@ -21,9 +25,12 @@
  * app, so nothing here is allowed to propagate an exception.
  */
 
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from './i18n.js';
+
 /** Namespaced and versioned: a shape change bumps the suffix, old keys rot. */
 const INPUTS_KEY = 'kain:inputs:v1';
 const CHECKED_KEY = 'kain:checked:v1';
+const LOCALE_KEY = 'kain:locale:v1';
 
 /**
  * Reading the property can itself throw (Chrome with site data blocked), so
@@ -125,6 +132,18 @@ export function createStorage(backend = defaultBackend()) {
       } catch {
         return false;
       }
+    },
+
+    /** @returns {string} `'fil'` unless a valid, stored `'en'` says otherwise. */
+    readLocale() {
+      const raw = readRaw(LOCALE_KEY);
+      return SUPPORTED_LOCALES.includes(raw) ? raw : DEFAULT_LOCALE;
+    },
+
+    /** @returns {boolean} whether it actually persisted. */
+    writeLocale(locale) {
+      if (!SUPPORTED_LOCALES.includes(locale)) return false;
+      return writeRaw(LOCALE_KEY, locale);
     }
   };
 }

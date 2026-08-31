@@ -27,13 +27,14 @@ Enactus Philippines 2026, Early-Stage Project Track, Angeles University Foundati
 | UI shell (4 screens) | Built |
 | Market mode + persistence | Built, tested — see "After the results screen" below |
 | Multi-day budgets | Built, tested — see "The day dimension" below |
+| Language toggle (Fil/En) | Built, tested — see "Language toggle" below. `fil` is the default. |
 | Offline / PWA | Built and deployed — offline retest on the live URL is still outstanding, see below |
 | Recipe + price data | **43/46 ingredients** now real, dated prices from DA Bantay Presyo, PSA OpenSTAT, DTI SRP, and named retailers. 3 ingredients (dried fish, sitsaro, togue) are confirmed absent from every PH government price series checked (DA, PSA, BFAR) and stay mock — flagged in `data/prices.json`. See "Backend handoff notes" below. |
 | Nutrition targets | Real: PDRI 2015 RNI (male 19-29y), per FDA Circular 2023-009's "general population" reference — see `js/nutrition-targets.js` |
 | PWA icons | Real 192×192 / 512×512, `any` + `maskable`, generated from the logo via `scripts/generate-icons.py` |
 | Deployment | **Live: https://kain-enactus.vercel.app** — HTTPS, service worker headers verified from this machine. A human still needs to do the real-device airplane-mode test, see "Deploy checklist". |
 
-Tests: **159 passing** (`npm test`).
+Tests: **174 passing** (`npm test`).
 
 ---
 
@@ -181,6 +182,35 @@ about what a plan means — rule 2 below still holds.
 
 ---
 
+## Language toggle (Fil/En)
+
+A pill in the header (`Fil` | `En`) switches every user-visible string in the
+app. **Default is `fil`** — the primary users are Filipino families, and the
+app's tone was already built around Tagalog for that reason; English is the
+toggle-to option, not the default. Persisted via `storage.readLocale()` /
+`writeLocale()` so a returning visitor keeps their choice.
+
+- `js/i18n.js` — the whole dictionary, one file, `{ fil: {...}, en: {...} }`,
+  plus `t(key, locale, vars)` for `{placeholder}` interpolation. Pure data, no
+  DOM, no network — same rule as every other module.
+- `js/format.js` — every exported function that produces user-facing text
+  takes an optional trailing `locale` argument (default `DEFAULT_LOCALE`).
+  Numbers, pesos and recipe/ingredient names are never translated.
+- `js/app.js` — owns the DOM. `applyLocale()` walks `[data-i18n]` /
+  `[data-i18n-aria]` elements in `index.html`, sets each one's `lang`
+  attribute to match what it now displays, updates the toggle's own pressed
+  state, and forces a repaint of the structural blocks that otherwise cache
+  their last-painted DOM (`renderedList` / `renderedCoverage`) since their
+  content carries words that just changed under them.
+- Recipe and ingredient names (`Munggo with Malunggay`, `Bawang`, …) are never
+  translated at either locale — they are what a stall in the palengke is
+  actually called, in either language.
+
+Adding a string: add the key to **both** locales in `js/i18n.js` (a key
+missing from one locale silently falls back to the other's text — see
+`test/i18n.test.js`, which fails loudly on that instead), then call `t()`
+from wherever the string is produced.
+
 ## Architecture rules
 
 **1. The solver graph makes zero network calls.** `js/solver.js` and everything
@@ -287,9 +317,11 @@ Known, deliberately unfixed. Roughly in priority order.
       `moveFocus()` now focuses the validation alert or the newly-shown screen's
       `<section tabindex="-1">` on transition instead of re-announcing everything.
 - [x] ~~No focus management when screens change~~ — see `moveFocus()` above.
-- [x] ~~`<html lang="en">` but most UI copy is Tagalog~~ — `lang="tl"` added to
-      each Tagalog element individually (headings, buttons, `#app-error`); the
-      page stays `lang="en"` since the field labels and descriptions are English.
+- [x] ~~`<html lang="en">` but most UI copy is Tagalog~~ — every element the
+      Fil/En toggle can retranslate has its `lang` attribute set at runtime by
+      `applyLocale()` in `app.js` (`tl` at fil, `en` at en), so it always
+      matches what is actually on screen. The root `<html lang="en">` is
+      unchanged — see "Language toggle" below.
 
 ### UX polish
 - [ ] `window.scrollTo({ behavior: 'smooth' })` fires on *every* state change,

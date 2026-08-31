@@ -149,3 +149,32 @@ test('no storage at all behaves exactly like empty storage', () => {
   assert.deepEqual(store.readCheckedKeys(), []);
   assert.doesNotThrow(() => store.writeInputs({ budget: 300, familySize: 4 }));
 });
+
+/* ── locale (the Fil/En toggle) ───────────────────────────────────────── */
+
+test('locale defaults to fil when nothing is stored', () => {
+  assert.equal(createStorage(fakeBackend()).readLocale(), 'fil');
+  assert.equal(createStorage(null).readLocale(), 'fil');
+});
+
+test('a chosen locale survives a round trip', () => {
+  const store = createStorage(fakeBackend());
+  assert.equal(store.writeLocale('en'), true);
+  assert.equal(store.readLocale(), 'en');
+});
+
+test('an unsupported or corrupted locale falls back to fil rather than reaching the UI', () => {
+  for (const bad of ['tl', 'EN', 'english', '', null]) {
+    const store = createStorage(fakeBackend({ 'kain:locale:v1': bad }));
+    assert.equal(store.readLocale(), 'fil');
+  }
+  assert.equal(createStorage(fakeBackend()).writeLocale('tagalog'), false);
+});
+
+test('locale storage never throws even when the backend is hostile', () => {
+  const store = createStorage(hostileBackend);
+  assert.doesNotThrow(() => {
+    assert.equal(store.readLocale(), 'fil');
+    assert.equal(store.writeLocale('en'), false);
+  });
+});
