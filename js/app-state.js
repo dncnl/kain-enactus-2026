@@ -35,12 +35,32 @@ export const MAX_BUDGET = 100000;
  */
 export const MAX_FAMILY_SIZE = 20;
 
-/** Cheapest single meal that feeds the whole family, in pesos. */
-function minimumViableBudget(recipes, familySize) {
+/**
+ * How many days one budget may be stretched over.
+ *
+ * The app models a *day* of eating: DAILY_TARGETS_PER_PERSON is a daily figure
+ * and maxPortions caps batches per day. Nothing in the data has a time axis, so
+ * a multi-day budget is handled by solving one day at budget/days and repeating
+ * it — the solver, the targets and the recipe contract are all untouched.
+ *
+ * Two weeks is the ceiling because the assumptions stop holding past it: fresh
+ * produce bought on day one will not survive to day fourteen, and the prices
+ * behind the plan are dated to a single week's bulletin.
+ */
+export const MAX_DAYS = 14;
+
+/**
+ * Cheapest budget that buys one meal for the whole family, in pesos.
+ *
+ * Scaled by days, because that is the number the user has to act on: at 3 days
+ * they need three days' worth in hand, not one day's, and advising the smaller
+ * figure would send them back to a plan that still does not solve.
+ */
+function minimumViableBudget(recipes, familySize, days = 1) {
   const costs = recipes
     .map((r) => r.costPerServing * familySize)
     .filter((c) => c > 0);
-  return costs.length ? Math.ceil(Math.min(...costs)) : 0;
+  return costs.length ? Math.ceil(Math.min(...costs)) * Math.max(1, days) : 0;
 }
 
 /**
@@ -82,6 +102,12 @@ export function createAppState() {
     error: null,
     budget: null,
     familySize: null,
+    /** Days the budget must cover. 1 is the original single-day behaviour. */
+    days: 1,
+    /** budget / days — what one day of the plan may actually cost. */
+    dailyBudget: null,
+    /** plan.totalCost * days: the whole trip, and what the list must match. */
+    totalCost: null,
     plan: null,
     shoppingList: null,
     coverage: null,
@@ -98,8 +124,13 @@ export function createAppState() {
       return () => listeners.delete(listener);
     },
 
-    /** Validate input and enter the calculating screen. */
-    submit({ budget, familySize }) {
+    /**
+     * Validate input and enter the calculating screen.
+     *
+     * `days` defaults to 1, which is exactly the original behaviour — every
+     * figure DEVNOTES quotes is a one-day figure and stays reachable.
+     */
+    submit({ budget, familySize, days = 1 }) {
       if (!Number.isFinite(budget) || budget <= 0) {
         state.error = 'Please enter a budget greater than zero.';
         state.screen = 'input';
@@ -120,9 +151,32 @@ export function createAppState() {
         state.screen = 'input';
         return notify();
       }
+      if (!Number.isFinite(days) || days < 1) {
+        state.error = 'A plan has to cover at least one day.';
+        state.screen = 'input';
+        return notify();
+      }
+      if (days > MAX_DAYS) {
+        state.error = `Kain plans up to ${MAX_DAYS} days at a time. Fresh produce will not keep longer than that.`;
+        state.screen = 'input';
+        return notify();
+      }
+
+      const dailyBudget = Math.floor(Math.floor(budget) / Math.floor(days));
+      if (dailyBudget < 1) {
+        // Spreading too thin: ₱10 over 14 days is ₱0 a day, which would solve
+        // to an empty plan and report "nothing fits" — true, but the useful
+        // answer is that the budget cannot stretch that far.
+        state.error = `₱${Math.floor(budget).toLocaleString('en-PH')} does not stretch to ${Math.floor(days)} days. Try fewer days.`;
+        state.screen = 'input';
+        return notify();
+      }
+
       state.error = null;
       state.budget = Math.floor(budget);
       state.familySize = Math.floor(familySize);
+      state.days = Math.floor(days);
+      state.dailyBudget = dailyBudget;
       state.screen = 'calculating';
       notify();
     },
@@ -137,8 +191,14 @@ export function createAppState() {
      *   silently inflating the running spend.
      */
     finish(recipes, restoredKeys = []) {
+      // ONE DAY is what the solver is asked for, always. DAILY_TARGETS_PER_PERSON
+      // is a daily figure and maxPortions caps batches per day, so solving the
+      // full multi-day budget in one pass would ask for a single day of eating
+      // that costs a week's money — which is exactly the 10-dish plan at ₱2000.
+      // Solve one day at budget/days, then repeat it.
+      const days = state.days ?? 1;
       const plan = solve({
-        budget: state.budget,
+        budget: state.dailyBudget ?? state.budget,
         familySize: state.familySize,
         recipes
       });
@@ -147,8 +207,9 @@ export function createAppState() {
         state.plan = null;
         state.shoppingList = null;
         state.coverage = null;
-        state.minimumBudget = minimumViableBudget(recipes, state.familySize);
-        state.partial = bestPartialMeal(recipes, state.budget);
+        state.totalCost = null;
+        state.minimumBudget = minimumViableBudget(recipes, state.familySize, days);
+        state.partial = bestPartialMeal(recipes, state.dailyBudget ?? state.budget);
         state.capped = false;
         state.checkedKeys = new Set();
         state.spent = 0;
@@ -157,7 +218,10 @@ export function createAppState() {
       }
 
       state.plan = plan;
-      state.shoppingList = buildShoppingList(plan);
+      state.totalCost = Math.round(plan.totalCost * days * 100) / 100;
+      state.shoppingList = buildShoppingList(plan, days);
+      // Coverage stays PER DAY and is measured against the one-day plan, so the
+      // percentages mean the same thing whether the trip covers one day or ten.
       state.coverage = calculateCoverage(plan);
       state.minimumBudget = null;
       state.partial = null;
@@ -202,6 +266,8 @@ export function createAppState() {
       state.coverage = null;
       state.minimumBudget = null;
       state.capped = false;
+      state.totalCost = null;
+      state.dailyBudget = null;
       // A new budget means a new list; carrying ticks over would credit the
       // user for items the next plan may not even contain.
       state.checkedKeys = new Set();

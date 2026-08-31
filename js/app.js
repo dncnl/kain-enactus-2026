@@ -12,7 +12,7 @@
  * deliberately DOM-free and side-effect-free so the flow stays testable in
  * plain node. This file is the only place that talks to the outside world.
  */
-import { createAppState, MAX_FAMILY_SIZE } from './app-state.js';
+import { createAppState, MAX_FAMILY_SIZE, MAX_DAYS } from './app-state.js';
 import { NUTRIENTS } from './nutrition.js';
 import { itemKey } from './shopping-list.js';
 import { storage } from './storage.js';
@@ -26,7 +26,9 @@ import {
   describePlanSpan,
   priceVintageLine,
   marketProgress,
-  formatPlanAsText
+  formatPlanAsText,
+  describeDayPlan,
+  shoppingSpanNote
 } from './format.js';
 
 /** How long the calculating screen shows. Pure pacing — the solve is instant. */
@@ -140,11 +142,30 @@ function moveFocus(state, screenChanged) {
 function renderResults(state) {
   const { plan, shoppingList, coverage } = state;
 
-  bind('totalCost').textContent = formatPeso(plan.totalCost);
-  bind('budget').textContent = formatPeso(plan.budget);
+  // The whole trip, not one day of it: state.totalCost is plan.totalCost x days
+  // and state.budget is the money the user actually entered.
+  const spend = state.totalCost ?? plan.totalCost;
+  const day = describeDayPlan({ ...state, dailySpend: plan.totalCost });
+
+  bind('totalCost').textContent = formatPeso(spend);
+  bind('budget').textContent = formatPeso(state.budget);
   bind('familySize').textContent = `${plan.familySize} ${plan.familySize === 1 ? 'person' : 'people'}`;
-  bind('leftover').textContent = formatPeso(plan.budget - plan.totalCost);
-  bind('planSpan').textContent = describePlanSpan(plan).text;
+  bind('leftover').textContent = formatPeso(state.budget - spend);
+  bind('planSpan').textContent =
+    describePlanSpan(plan).text + (day.isMultiDay ? ', each day' : '');
+
+  const daySpan = bind('daySpan');
+  daySpan.textContent = day.isMultiDay ? `${day.spanText} · ${day.perDayText}` : '';
+  daySpan.hidden = !day.isMultiDay;
+
+  const mealsNote = bind('mealsNote');
+  mealsNote.textContent = day.isMultiDay ? day.cookText : '';
+  mealsNote.hidden = !day.isMultiDay;
+
+  const shoppingSpan = bind('shoppingSpan');
+  const spanNote = shoppingSpanNote(day.days);
+  shoppingSpan.textContent = spanNote ?? '';
+  shoppingSpan.hidden = spanNote === null;
 
   const cappedNote = bind('cappedNote');
   if (cappedNote) cappedNote.hidden = !state.capped;
@@ -381,7 +402,11 @@ function showShareStatus(message) {
  */
 async function sharePlan() {
   if (!app.plan || !app.shoppingList) return;
-  const text = formatPlanAsText(app.plan, app.shoppingList);
+  const text = formatPlanAsText(app.plan, app.shoppingList, {
+    days: app.days,
+    budget: app.budget,
+    totalCost: app.totalCost
+  });
 
   if (navigator.share) {
     try {
@@ -406,6 +431,22 @@ async function sharePlan() {
 
 const budgetInput = document.getElementById('budget');
 const familyInput = document.getElementById('familySize');
+const daysInput = document.getElementById('days');
+
+/** Live "that is ₱X a day" hint under the days stepper. Pure feedback. */
+function updatePerDayHint() {
+  const hint = bind('perDayHint');
+  const budget = Number.parseFloat(budgetInput.value);
+  const days = Number.parseInt(daysInput.value, 10);
+  if (!Number.isFinite(budget) || budget <= 0 || !Number.isFinite(days) || days < 1) {
+    hint.textContent = '';
+    return;
+  }
+  hint.textContent =
+    days === 1
+      ? `${formatPeso(Math.floor(budget))} for one day.`
+      : `${formatPeso(Math.floor(budget / days))} a day for ${days} days.`;
+}
 
 document.getElementById('plan-form').addEventListener('submit', (event) => {
   event.preventDefault();
@@ -418,13 +459,14 @@ document.getElementById('plan-form').addEventListener('submit', (event) => {
   }
   const budget = Number.parseFloat(budgetInput.value);
   const familySize = Number.parseInt(familyInput.value, 10);
+  const days = Number.parseInt(daysInput.value, 10);
 
-  app.submit({ budget, familySize });
+  app.submit({ budget, familySize, days });
   if (app.screen !== 'calculating') return;
 
   // Only remember inputs the state machine accepted, so a rejected value is
   // never restored on the next visit.
-  storage.writeInputs({ budget: app.budget, familySize: app.familySize });
+  storage.writeInputs({ budget: app.budget, familySize: app.familySize, days: app.days });
   setTimeout(() => app.finish(recipes, storage.readCheckedKeys()), CALCULATING_MS);
 });
 
@@ -433,6 +475,18 @@ for (const button of document.querySelectorAll('[data-step]')) {
     const next = (Number.parseInt(familyInput.value, 10) || 1) + Number(button.dataset.step);
     familyInput.value = Math.min(MAX_FAMILY_SIZE, Math.max(1, next));
   });
+}
+
+for (const button of document.querySelectorAll('[data-step-days]')) {
+  button.addEventListener('click', () => {
+    const next = (Number.parseInt(daysInput.value, 10) || 1) + Number(button.dataset.stepDays);
+    daysInput.value = Math.min(MAX_DAYS, Math.max(1, next));
+    updatePerDayHint();
+  });
+}
+
+for (const input of [budgetInput, daysInput]) {
+  input.addEventListener('input', updatePerDayHint);
 }
 
 for (const button of document.querySelectorAll('[data-action="reset"]')) {
@@ -466,7 +520,9 @@ const savedInputs = storage.readInputs();
 if (savedInputs) {
   budgetInput.value = String(savedInputs.budget);
   familyInput.value = String(savedInputs.familySize);
+  if (savedInputs.days) daysInput.value = String(savedInputs.days);
 }
+updatePerDayHint();
 
 app.subscribe(render);
 loadRecipes();
