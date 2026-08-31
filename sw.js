@@ -13,7 +13,7 @@
  *
  * Bump CACHE_NAME on every deploy — that is what evicts stale files.
  */
-const CACHE_NAME = 'kain-v7';
+const CACHE_NAME = 'kain-v8';
 
 /** Local app shell. Install fails if any of these fail. */
 const PRECACHE_URLS = [
@@ -85,8 +85,13 @@ self.addEventListener('fetch', (event) => {
       const network = fetch(request)
         .then(async (response) => {
           if (response.ok || response.type === 'opaque') {
-            const cache = await caches.open(CACHE_NAME);
-            await cache.put(request, response.clone());
+            try {
+              const cache = await caches.open(CACHE_NAME);
+              await cache.put(request, response.clone());
+            } catch {
+              // Caching is best-effort. A failed put (redirected response, quota,
+              // opaque edge case) must never cost the page a live response.
+            }
           }
           return response;
         })
